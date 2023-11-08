@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "codenames"
+version = "0.1.0"
+description = ""
+authors = ["Allison Braithwaite <alliroseb@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+graphene = "2.1.9"
+flask = "^3.0.0"
+flask-graphql = "^2.0.1"
+graphene-federation = "0.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,7 @@
+type Query {
+  testObject: TestObject
+}
+
+type TestObject {
+  testField: String
+}
