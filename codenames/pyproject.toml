@@ -11,6 +11,8 @@ graphene = "2.1.9"
 flask = "^3.0.0"
 flask-graphql = "^2.0.1"
 graphene-federation = "0.2.0"
+openai = "^1.2.0"
+python-dotenv = "^1.0.0"
 
 
 [build-system]
