@@ -1,14 +1,27 @@
-from graphene import ObjectType, Field, String
+from graphene import ObjectType, Field, String, Boolean, Int
 from graphene_federation import build_schema
+from enum import Enum
 
-class TestObject(ObjectType):
-    test_field = String()
+# Define card type enum
+class CardType(Enum):
+    RED_AGENT = "red_agent"
+    BLUE_AGENT = "blue_agent"
+    BYSTANDER = "bystander"
+    ASSASSIN = "assassin"
+    
+class Position(ObjectType):
+    x = Int()
+    y = Int()
+
+class Card(ObjectType):
+    word_value = String()
+    type_value = CardType()
+    position = Field(Position)
+    is_revealed = Boolean()
 
 class Query(ObjectType):
-    test_object = Field(TestObject)
-    
-    def resolve_test_object(self, info):
-        return TestObject(test_field="test")
+    card = Field(Card, position=Position(required=True))
+
 
 schema = build_schema(query=Query)
 
