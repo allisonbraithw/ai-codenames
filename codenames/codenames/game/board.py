@@ -27,6 +27,7 @@ def initiate_board() -> List[Card]:
     deck.add(Card(word_value=selected_words.pop(), type_value=CardType.ASSASSIN))
     
     # assign each random card a position
+    # todo(arb) - this is not random enough
     final_board = []
     for i in range(5):
         for j in range(5):
@@ -34,7 +35,8 @@ def initiate_board() -> List[Card]:
             random_card.position = Position(x=i, y=j)
             final_board.append(random_card)
     # return the board
-    print(len(final_board))
+    board_string = "\n".join([str(card) for card in final_board])
+    print(board_string)
     return final_board
 
 
