@@ -1,7 +1,28 @@
-type Query {
-  testObject: TestObject
+type Card {
+  wordValue: String
+  typeValue: CardType
+  position: Position
+  isRevealed: Boolean
 }
 
-type TestObject {
-  testField: String
+enum CardType {
+  RED_AGENT
+  BLUE_AGENT
+  BYSTANDER
+  ASSASSIN
+}
+
+type Position {
+  x: Int
+  y: Int
+}
+
+input PositionInput {
+  x: Int
+  y: Int
+}
+
+type Query {
+  card(position: PositionInput!): Card
+  board: [Card]
 }
