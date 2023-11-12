@@ -1,9 +1,11 @@
 import os
 from time import sleep
 from dotenv import load_dotenv
+from typing import List
 
 
 # from codenames.game.board import initiate_board
+from codenames.schema.schema import Card
 from codenames.dependency_factory import dependency_factory as df
 
 load_dotenv()
@@ -26,11 +28,23 @@ def initialize_ai_spymaster(color: str = "red" ):
 def initialize_game_thread():
     return client.beta.threads.create()
 
+def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> str:
+    """Given a board and a color, return a clue"""
+    board_string = "\n".join([str(card) for card in board])
+    client.beta.threads.messages.create(thread_id, role="user", content=f"Here are the cards in the board: {board_string}. Return a clue for your teams color")
+    run = client.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=spymaster_id,
+    )
+    messages = retrieve_messages(thread_id, run.id)
+    return messages.data[0].content
+    
+
 def retrieve_messages(thread_id: str, run_id: str):
     while True:
         sleep(1)
-        message = client.beta.threads.messages.retrieve(thread_id=thread_id, run_id=run_id)
-        if message.status == "completed":
+        run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
+        if run.status == "completed":
             break
     return client.beta.threads.messages.list(thread_id=thread_id)
 
