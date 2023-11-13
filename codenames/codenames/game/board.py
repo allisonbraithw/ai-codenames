@@ -98,18 +98,22 @@ class CodenamesGame():
         guessed_card.is_revealed = True
         match guessed_card.type_value:
             case CardType.RED_AGENT:
+                print("Red agent!\n")
                 self.red_score += 1
                 self.red_turn = True
                 if self.red_score == 9:
                     self.winner = "red"
             case CardType.BLUE_AGENT:
+                print("Blue agent!\n")
                 self.blue_score += 1
                 self.red_turn = False
                 if self.blue_score == 8:
                     self.winner = "blue"
             case CardType.BYSTANDER:
+                print("Bystander!\n")
                 self.red_turn = not self.red_turn
             case CardType.ASSASSIN:
+                print("Assassin!\n")
                 self.winner = "blue" if self.red_turn else "red"
                 
     def end_turn(self):
@@ -145,8 +149,8 @@ class CodenamesGame():
                 random_card.position = Position(x=i, y=j)
                 final_board.append(random_card)
         # return the board
-        board_string = "\n".join([str(card) for card in final_board])
-        print(board_string)
+        # board_string = "\n".join([str(card) for card in final_board])
+        # print(board_string)
         return final_board
 
 
@@ -154,11 +158,34 @@ if __name__ == "__main__":
     game = CodenamesGame()
     game.red_spymaster = initialize_ai_spymaster("red")
     game.blue_spymaster = initialize_ai_spymaster("blue")
-    print(get_spymaster_clue(game.board, game.openai_thread.id, game.red_spymaster.id))
-    game.reveal_card(Position(x=0, y=0))
-    board_string = "\n".join([str(card) for card in game.board])
-    print(board_string)
-    print(game.red_turn)
+    prev_turn = not game.red_turn
+    while True:
+        board_string = "\n".join([str(card) for card in game.board])
+        print(board_string + "\n")
+        # If the turn has changed, we need a new clue:
+        if prev_turn != game.red_turn:
+            if game.red_turn:
+                print("Red turn:\n")
+                print(get_spymaster_clue(game.board, game.openai_thread.id, game.red_spymaster.id)[0].text.value)
+            else:
+                print("Blue turn\n")
+                print(get_spymaster_clue(game.board, game.openai_thread.id, game.blue_spymaster.id)[0].text.value)
+
+        prev_turn = game.red_turn
+        choice = input("Enter a position to guess (format: x,y), or 'next' to end turn:\n")
+        if choice == "next":
+            game.end_turn()
+            print(f"Current turn: {'red' if game.red_turn else 'blue'}\n")
+            continue
+        guess_position = Position(int(choice.split(",")[0]), int(choice.split(",")[1]))
+        game.reveal_card(guess_position)
+        if game.winner:
+            print(f"{game.winner} wins!")
+            break
+    # game.reveal_card(Position(x=0, y=0))
+    # board_string = "\n".join([str(card) for card in game.board])
+    # print(board_string)
+    # print(game.red_turn)
     # print(game.board)
     # get initial clue from red spymaster
     # have a way for user to guess (reveal_card, this will update the board)

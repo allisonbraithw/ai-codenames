@@ -8,6 +8,9 @@ class CardType(graphene.Enum):
     BLUE_AGENT = 2
     BYSTANDER = 3
     ASSASSIN = 4
+
+    def __str__(self):
+        return self.name.replace('_', ' ').title()
     
 class Position(graphene.ObjectType):
     x = graphene.Int()
@@ -31,7 +34,10 @@ class Card(graphene.ObjectType):
     
     # Print a string that contains all the relevant information about the card
     def __str__(self):
-        return f"Card: {self.word_value}, {self.type_value}, {str(self.position)}, {self.is_revealed}"
+        if self.is_revealed:
+            return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}"
+        else:
+            return f"Card: {self.word_value}, {str(self.position)}"
         
 
 class GuessCard(graphene.Mutation):
