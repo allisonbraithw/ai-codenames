@@ -1,11 +1,11 @@
-import os
+import json
 from time import sleep
 from dotenv import load_dotenv
 from typing import List
 
 
 # from codenames.game.board import initiate_board
-from codenames.schema.schema import Card
+from codenames.schema.schema import Card, Clue
 from codenames.dependency_factory import dependency_factory as df
 
 load_dotenv()
@@ -20,9 +20,12 @@ def initialize_ai_spymaster(color: str = "red" ):
             board of 25 words, the role of each word (red agent, blue agent, assassin, bystander), and the status of each \
             card (revealed or unrevealed). Your job is to provide a clue that will help your team guess the {color} agents. \
             You are the spymaster in the game, and thus you should return a clue following the rules, ie, is a single word, and a \
-            number indicating the number of cards related to the clue. Do not explain your reasoning. \
+            number indicating the number of cards related to the clue. \
             The cards will be provided as a list of strings, formatted as follows: \
                Card: word, type, position, is_revealed. The type is one of: red_agent, blue_agent, assassin, bystander. \
+            You should return your response json formatted as follows: \
+                {{\"text\": \"clue\", \"number\": 1, \"reasouning\": \"<your reasoning here>\"}} \
+            do not include ANY additional characters outside of the json, including delimiters or the word json \
             "
     )
     return spymaster
@@ -39,7 +42,14 @@ def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> 
         assistant_id=spymaster_id,
     )
     messages = retrieve_messages(thread_id, run.id)
-    return messages.data[0].content
+    clue = messages.data[0].content[0].text.value
+    try:
+        json_clue = json.loads(clue)
+    except json.JSONDecodeError:
+        raise Exception("Clue not returned in json format")
+    # return the clue as a Clue object
+    return Clue(text=json_clue["text"], number=int(json_clue["number"]), reasoning=json_clue["reasoning"])
+    
     
 
 def retrieve_messages(thread_id: str, run_id: str):

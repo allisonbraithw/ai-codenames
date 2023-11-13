@@ -44,7 +44,13 @@ class Card(graphene.ObjectType):
     def __repr__(self):
         return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}, {self.is_revealed}"
         
-    
+class Clue(graphene.ObjectType):
+    text = graphene.String()
+    number = graphene.Int()
+    reasoning = graphene.String()
+        
+    def __str__(self):
+        return f"Clue: {self.text}, {self.number}, {self.reasoning}"
         
 
 class GuessCard(graphene.Mutation):
