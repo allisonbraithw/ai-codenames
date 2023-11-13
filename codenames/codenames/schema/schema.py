@@ -33,11 +33,18 @@ class Card(graphene.ObjectType):
     is_revealed = graphene.Boolean(default_value=False)
     
     # Print a string that contains all the relevant information about the card
+    # if the card is revealed, includes the type, else does not
     def __str__(self):
         if self.is_revealed:
             return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}"
         else:
             return f"Card: {self.word_value}, {str(self.position)}"
+      
+    # Returns the full representation of the card, with all information, whether it is revealed or not
+    def __repr__(self):
+        return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}, {self.is_revealed}"
+        
+    
         
 
 class GuessCard(graphene.Mutation):

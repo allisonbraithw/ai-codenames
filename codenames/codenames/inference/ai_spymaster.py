@@ -21,6 +21,8 @@ def initialize_ai_spymaster(color: str = "red" ):
             card (revealed or unrevealed). Your job is to provide a clue that will help your team guess the {color} agents. \
             You are the spymaster in the game, and thus you should return a clue following the rules, ie, is a single word, and a \
             number indicating the number of cards related to the clue. Do not explain your reasoning. \
+            The cards will be provided as a list of strings, formatted as follows: \
+               Card: word, type, position, is_revealed. The type is one of: red_agent, blue_agent, assassin, bystander. \
             "
     )
     return spymaster
@@ -30,7 +32,7 @@ def initialize_game_thread():
 
 def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> str:
     """Given a board and a color, return a clue"""
-    board_string = "\n".join([str(card) for card in board])
+    board_string = "\n".join([repr(card) for card in board])
     client.beta.threads.messages.create(thread_id, role="user", content=f"Here are the cards in the board: {board_string}. Return a clue for your teams color")
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
