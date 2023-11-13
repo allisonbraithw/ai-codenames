@@ -6,3 +6,6 @@ schema.graphql: codenames/schema/schema.py
 
 run: 
 	poetry run python codenames/main.py --reload
+
+play-cli:
+	poetry run python codenames/game/board.py

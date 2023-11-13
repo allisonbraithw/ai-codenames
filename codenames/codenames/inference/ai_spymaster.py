@@ -33,7 +33,7 @@ def initialize_game_thread():
 def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> str:
     """Given a board and a color, return a clue"""
     board_string = "\n".join([repr(card) for card in board])
-    client.beta.threads.messages.create(thread_id, role="user", content=f"Here are the cards in the board: {board_string}. Return a clue for your teams color")
+    client.beta.threads.messages.create(thread_id, role="user", content=f"Here are the cards in the board: {board_string}. Return a clue for the remaining cards of your team's color")
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=spymaster_id,
