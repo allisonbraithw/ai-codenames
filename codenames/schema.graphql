@@ -12,6 +12,14 @@ enum CardType {
   ASSASSIN
 }
 
+type GuessCard {
+  ok: Boolean
+}
+
+type Mutation {
+  guessCard(position: PositionInput!): GuessCard
+}
+
 type Position {
   x: Int
   y: Int

@@ -78,32 +78,29 @@ class CodenamesGame():
         while len(selected_words) < 25:
             selected_words.add(random.choice(WORD_LIST))
             
-        x_coords = [x for x in range(5) for x in range(5)]
-        y_coords = [y for y in range(5) for y in range(5)]
+        position_opts = [(x, y) for x in range(5) for y in range(5)]
 
         # assign 9 words to be red agents
         for _ in range(9):
-            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.RED_AGENT, position=random_position(x_coords, y_coords)))
+            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.RED_AGENT, position=random_position(position_opts)))
         # assign 8 words to be blue agents
         for _ in range(8):
-            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.BLUE_AGENT, position=random_position(x_coords, y_coords)))
+            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.BLUE_AGENT, position=random_position(position_opts)))
         # assign 7 words to be bystanders
         for _ in range(7):
-            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.BYSTANDER, position=random_position(x_coords, y_coords)))
+            deck.add(Card(word_value=selected_words.pop(), type_value=CardType.BYSTANDER, position=random_position(position_opts)))
         # assign 1 word to be the assassin
-        deck.add(Card(word_value=selected_words.pop(), type_value=CardType.ASSASSIN, position=random_position(x_coords, y_coords)))
+        deck.add(Card(word_value=selected_words.pop(), type_value=CardType.ASSASSIN, position=random_position(position_opts)))
         
         # return the board
         # board_string = "\n".join([str(card) for card in final_board])
         # print(board_string)
         return deck
 
-def random_position(x_coords, y_coords) -> Position:
-    x = random.choice(x_coords)
-    y = random.choice(y_coords)
-    x_coords.remove(x)
-    y_coords.remove(y)
-    return Position(x=x, y=y)
+def random_position(position_opts) -> Position:
+    coords = random.choice(position_opts)
+    position_opts.remove(coords)
+    return Position(x=coords[0], y=coords[1])
 
 if __name__ == "__main__":
     game = CodenamesGame()

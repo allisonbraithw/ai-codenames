@@ -58,13 +58,18 @@ class Clue(graphene.ObjectType):
 class GuessCard(graphene.Mutation):
     class Arguments:
         position = PositionInput(required=True)
-        
-    Output = Card
+    
+    # todo(arb) error handling
+    ok = graphene.Boolean()
     
     def mutate(self, info, position):
+        game = CodenamesGame.get_game()
+        game.reveal_card(position)
         
-        return Card(position=position)
-    
+        return GuessCard(ok=True)
+
+class Mutation(graphene.ObjectType):
+    guess_card = GuessCard.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
@@ -75,7 +80,7 @@ class Query(graphene.ObjectType):
         return game.board
 
 
-schema = build_schema(query=Query)
+schema = build_schema(query=Query, mutation=Mutation)
 
 # Helpers
 def user_guesses(board: List[Card], guess: Card) -> CardType:
