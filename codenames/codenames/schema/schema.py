@@ -71,7 +71,7 @@ class Query(graphene.ObjectType):
     board = graphene.List(Card)
     
     def resolve_board(self, info):
-        game = CodenamesGame()
+        game = CodenamesGame.get_game()
         return game.board
 
 

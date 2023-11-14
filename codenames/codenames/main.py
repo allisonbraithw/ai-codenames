@@ -1,12 +1,15 @@
 from dotenv import load_dotenv
 from flask import Flask
 from flask_graphql import GraphQLView
+from flask_cors import CORS
 
 from codenames.schema.schema import schema
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:5174"])
+app.debug = True
 
 app.add_url_rule(
     "/graphql",
