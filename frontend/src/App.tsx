@@ -1,6 +1,19 @@
 // import { useState } from 'react'
 import { SimpleGrid, Box, Spacer } from '@chakra-ui/react'
+import { graphql } from "../src/gql"
 import './App.css'
+
+const getBoardQuery = graphql(`
+  query {
+    board {
+      card {
+        word
+        type
+        revealed
+      }
+    }
+  }
+`)
 
 function App() {
 

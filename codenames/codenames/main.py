@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_graphql import GraphQLView
 
-from codenames.schema import schema
+from codenames.schema.schema import schema
 
 load_dotenv()
 
@@ -18,4 +18,4 @@ app.add_url_rule(
 )
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=4000)

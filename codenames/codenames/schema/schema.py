@@ -2,6 +2,8 @@ import graphene
 from typing import List
 from graphene_federation import build_schema
 
+from codenames.game.game import CodenamesGame
+
 # Define card type enum
 class CardType(graphene.Enum):
     RED_AGENT = 1
@@ -67,6 +69,10 @@ class GuessCard(graphene.Mutation):
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
     board = graphene.List(Card)
+    
+    def resolve_board(self, info):
+        game = CodenamesGame()
+        return game.board
 
 
 schema = build_schema(query=Query)
