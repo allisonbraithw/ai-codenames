@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SimpleGrid, Box, Spacer, Flex, Text } from '@chakra-ui/react'
+import { SimpleGrid, Box, Spacer, Flex, Text, Button } from '@chakra-ui/react'
 import { graphql } from "../src/gql"
 import { Card, Position } from '../src/gql/graphql'
 import { useLazyQuery, useMutation } from '@apollo/client'
@@ -77,7 +77,8 @@ function App() {
     <>
       <h1>CodenamesAI</h1>
       <Spacer p={5}/>
-      <button onClick={handleLoadBoard}>Get Board</button>
+      <Button onClick={handleLoadBoard}>Get Board</Button>
+      <Spacer p={5}/>
       <SimpleGrid columns={5} spacing={10}>
         {board.map((card) => (
             renderCard(card)

@@ -8,7 +8,7 @@ from codenames.schema.schema import schema
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5174"])
+CORS(app, origins=["http://localhost:5173"])
 app.debug = True
 
 app.add_url_rule(
