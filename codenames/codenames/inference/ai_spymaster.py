@@ -24,7 +24,7 @@ def initialize_ai_spymaster(color: str = "red" ):
             The cards will be provided as a list of strings, formatted as follows: \
                Card: word, type, position, is_revealed. The type is one of: red_agent, blue_agent, assassin, bystander. \
             You should return your response json formatted as follows: \
-                {{\"text\": \"clue\", \"number\": 1, \"reasouning\": \"<your reasoning here>\"}} \
+                {{\"word\": \"clue\", \"number\": 1, \"reasouning\": \"<your reasoning here>\"}} \
             do not include ANY additional characters outside of the json, including delimiters or the word json \
             "
     )
@@ -48,7 +48,7 @@ def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> 
     except json.JSONDecodeError:
         raise Exception("Clue not returned in json format")
     # return the clue as a Clue object
-    return Clue(text=json_clue["text"], number=int(json_clue["number"]), reasoning=json_clue["reasoning"])
+    return Clue(word=json_clue["word"], number=int(json_clue["number"]), reasoning=json_clue["reasoning"])
     
     
 

@@ -31,14 +31,34 @@ export enum CardType {
   RedAgent = 'RED_AGENT'
 }
 
+export type Clue = {
+  __typename?: 'Clue';
+  number?: Maybe<Scalars['Int']['output']>;
+  reasoning?: Maybe<Scalars['String']['output']>;
+  word?: Maybe<Scalars['String']['output']>;
+};
+
+export type Game = {
+  __typename?: 'Game';
+  board?: Maybe<Array<Maybe<Card>>>;
+  currentClue?: Maybe<Clue>;
+  turn?: Maybe<Team>;
+};
+
 export type GuessCard = {
   __typename?: 'GuessCard';
   ok?: Maybe<Scalars['Boolean']['output']>;
 };
 
+export type InitializeGame = {
+  __typename?: 'InitializeGame';
+  game?: Maybe<Game>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   guessCard?: Maybe<GuessCard>;
+  initializeGame?: Maybe<InitializeGame>;
 };
 
 
@@ -59,8 +79,8 @@ export type PositionInput = {
 
 export type Query = {
   __typename?: 'Query';
-  board?: Maybe<Array<Maybe<Card>>>;
   card?: Maybe<Card>;
+  game?: Maybe<Game>;
 };
 
 
@@ -68,10 +88,20 @@ export type QueryCardArgs = {
   position: PositionInput;
 };
 
+export enum Team {
+  Blue = 'BLUE',
+  Red = 'RED'
+}
+
 export type GetBoardQueryDocumentQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetBoardQueryDocumentQuery = { __typename?: 'Query', board?: Array<{ __typename?: 'Card', wordValue?: string | null, typeValue?: CardType | null, isRevealed?: boolean | null, position?: { __typename?: 'Position', x?: number | null, y?: number | null } | null } | null> | null };
+export type GetBoardQueryDocumentQuery = { __typename?: 'Query', game?: { __typename?: 'Game', turn?: Team | null, board?: Array<{ __typename?: 'Card', wordValue?: string | null, typeValue?: CardType | null, isRevealed?: boolean | null, position?: { __typename?: 'Position', x?: number | null, y?: number | null } | null } | null> | null, currentClue?: { __typename?: 'Clue', word?: string | null, number?: number | null } | null } | null };
+
+export type InitializeGameMutationDocumentMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type InitializeGameMutationDocumentMutation = { __typename?: 'Mutation', initializeGame?: { __typename?: 'InitializeGame', game?: { __typename?: 'Game', turn?: Team | null, board?: Array<{ __typename?: 'Card', wordValue?: string | null, typeValue?: CardType | null, isRevealed?: boolean | null, position?: { __typename?: 'Position', x?: number | null, y?: number | null } | null } | null> | null, currentClue?: { __typename?: 'Clue', word?: string | null, number?: number | null } | null } | null } | null };
 
 export type GuessCardMutationDocumentMutationVariables = Exact<{
   position: PositionInput;
@@ -81,5 +111,6 @@ export type GuessCardMutationDocumentMutationVariables = Exact<{
 export type GuessCardMutationDocumentMutation = { __typename?: 'Mutation', guessCard?: { __typename?: 'GuessCard', ok?: boolean | null } | null };
 
 
-export const GetBoardQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBoardQueryDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}}]} as unknown as DocumentNode<GetBoardQueryDocumentQuery, GetBoardQueryDocumentQueryVariables>;
+export const GetBoardQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBoardQueryDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"turn"}},{"kind":"Field","name":{"kind":"Name","value":"currentClue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}}]}}]}}]}}]} as unknown as DocumentNode<GetBoardQueryDocumentQuery, GetBoardQueryDocumentQueryVariables>;
+export const InitializeGameMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"InitializeGameMutationDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializeGame"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"turn"}},{"kind":"Field","name":{"kind":"Name","value":"currentClue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}}]}}]}}]}}]}}]} as unknown as DocumentNode<InitializeGameMutationDocumentMutation, InitializeGameMutationDocumentMutationVariables>;
 export const GuessCardMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GuessCardMutationDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"position"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PositionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"guessCard"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"position"},"value":{"kind":"Variable","name":{"kind":"Name","value":"position"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<GuessCardMutationDocumentMutation, GuessCardMutationDocumentMutationVariables>;

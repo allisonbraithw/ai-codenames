@@ -13,8 +13,8 @@ class CodenamesGame():
     def __init__(self):
         self.board = self.initiate_board()
         self.openai_thread = initialize_game_thread()
-        self.red_spymaster = None
-        self.blue_spymaster = None
+        self.red_spymaster = initialize_ai_spymaster("red")
+        self.blue_spymaster = initialize_ai_spymaster("blue")
         self.red_operatives = []
         self.blue_operatives = []
         self.red_clues = []
@@ -31,6 +31,12 @@ class CodenamesGame():
         if not cls._instance:
             cls._instance = CodenamesGame()
         return cls._instance
+    
+    def generate_clue(self):
+        if self.red_turn:
+            self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))
+        else:
+            self.blue_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.blue_spymaster.id))
         
     def get_current_clue(self) -> Clue:
         if self.red_turn:
@@ -51,18 +57,24 @@ class CodenamesGame():
             case CardType.RED_AGENT:
                 print("Red agent!\n")
                 self.red_score += 1
-                self.red_turn = True
+                # it was blue's turn, so set turn to red and generate a new clue
+                if not self.red_turn:
+                    self.red_turn = True
+                    self.generate_clue()
                 if self.red_score == 9:
                     self.winner = "red"
             case CardType.BLUE_AGENT:
                 print("Blue agent!\n")
                 self.blue_score += 1
-                self.red_turn = False
+                if self.red_turn:
+                    self.red_turn = False
+                    self.generate_clue()
                 if self.blue_score == 8:
                     self.winner = "blue"
             case CardType.BYSTANDER:
                 print("Bystander!\n")
                 self.red_turn = not self.red_turn
+                self.generate_clue()
             case CardType.ASSASSIN:
                 print("Assassin!\n")
                 self.winner = "blue" if self.red_turn else "red"
@@ -104,8 +116,6 @@ def random_position(position_opts) -> Position:
 
 if __name__ == "__main__":
     game = CodenamesGame()
-    game.red_spymaster = initialize_ai_spymaster("red")
-    game.blue_spymaster = initialize_ai_spymaster("blue")
     prev_turn = not game.red_turn
     while True:
         board_string = "\n".join([str(card) for card in game.board])

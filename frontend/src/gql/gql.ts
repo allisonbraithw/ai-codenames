@@ -13,7 +13,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  query GetBoardQueryDocument {\n    board {\n      wordValue\n      typeValue\n      isRevealed\n      position {\n        x\n        y\n      }\n    }\n  }\n": types.GetBoardQueryDocumentDocument,
+    "\n  query GetBoardQueryDocument {\n    game {\n      board {\n        wordValue\n        typeValue\n        isRevealed\n        position {\n          x\n          y\n        }\n      }\n      turn\n      currentClue {\n        word\n        number\n      }\n    }\n  }\n": types.GetBoardQueryDocumentDocument,
+    "\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n": types.InitializeGameMutationDocumentDocument,
     "\n  mutation GuessCardMutationDocument($position: PositionInput!) {\n    guessCard(position: $position) {\n      ok\n    }\n  }\n": types.GuessCardMutationDocumentDocument,
 };
 
@@ -34,7 +35,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetBoardQueryDocument {\n    board {\n      wordValue\n      typeValue\n      isRevealed\n      position {\n        x\n        y\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetBoardQueryDocument {\n    board {\n      wordValue\n      typeValue\n      isRevealed\n      position {\n        x\n        y\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query GetBoardQueryDocument {\n    game {\n      board {\n        wordValue\n        typeValue\n        isRevealed\n        position {\n          x\n          y\n        }\n      }\n      turn\n      currentClue {\n        word\n        number\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetBoardQueryDocument {\n    game {\n      board {\n        wordValue\n        typeValue\n        isRevealed\n        position {\n          x\n          y\n        }\n      }\n      turn\n      currentClue {\n        word\n        number\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -1,19 +1,49 @@
 import { useState } from 'react'
-import { SimpleGrid, Box, Spacer, Flex, Text, Button } from '@chakra-ui/react'
+import { SimpleGrid, Box, Spacer, Flex, Text, Button, Card as ChakraCard, CardBody } from '@chakra-ui/react'
 import { graphql } from "../src/gql"
-import { Card, Position } from '../src/gql/graphql'
+import { Card, Position, Team, Clue } from '../src/gql/graphql'
 import { useLazyQuery, useMutation } from '@apollo/client'
 import './App.css'
 
 const getBoardQueryDocument = graphql(`
   query GetBoardQueryDocument {
-    board {
-      wordValue
-      typeValue
-      isRevealed
-      position {
-        x
-        y
+    game {
+      board {
+        wordValue
+        typeValue
+        isRevealed
+        position {
+          x
+          y
+        }
+      }
+      turn
+      currentClue {
+        word
+        number
+      }
+    }
+  }
+`)
+
+const initializeGameMutationDocument = graphql(`
+  mutation InitializeGameMutationDocument {
+    initializeGame {
+      game {
+        board {
+          wordValue
+          typeValue
+          isRevealed
+          position {
+            x
+            y
+          }
+        }
+        turn
+        currentClue {
+          word
+          number
+        }
       }
     }
   }
@@ -29,27 +59,44 @@ const guessCardMutationDocument = graphql(`
 
 function App() {
   const [ board, setBoard ] = useState<Array<Card>>([])
+  const [ turn, setTurn ] = useState<Team>(Team.Red)
+  const [ clue, setClue ] = useState<Clue>()
+  const [ generateBoard ] = useMutation(initializeGameMutationDocument)
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
     onCompleted: (data) => {
-      if (data.board != null) {
-        console.log(data.board)
-        setBoard(data.board.filter((card): card is Card => card !== null))
+      if (data.game != null) {
+        console.log(data)
+        setBoard(data.game.board!.filter((card): card is Card => card !== null))
+        setTurn(data.game.turn!)
+        setClue(data.game.currentClue!)
       }
     },
     fetchPolicy: 'no-cache'
   })
   const [ guessCard ] = useMutation(guessCardMutationDocument)
-
   const handleLoadBoard = () => {
-    loadBoard()
+    generateBoard({
+      onCompleted: (data) => {
+        if (data.initializeGame != null) {
+          console.log(data)
+          setBoard(data.initializeGame.game!.board!.filter((card): card is Card => card !== null))
+          setTurn(data.initializeGame.game!.turn!)
+          setClue(data.initializeGame.game!.currentClue!)
+        }
+      }
+    })
   }
 
-  const handleGuessCard = (position: Position) => {
-    guessCard({ variables: { "position": {
-      x: position.x,
-      y: position.y
-    } } })
-    loadBoard()
+  const handleGuessCard = async (position: Position) => {
+    try {
+      await guessCard({ variables: { "position": {
+        x: position.x,
+        y: position.y
+      } } })
+      loadBoard()
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const renderCard = (card: Card) => {
@@ -77,14 +124,26 @@ function App() {
     <>
       <h1>CodenamesAI</h1>
       <Spacer p={5}/>
-      <Button onClick={handleLoadBoard}>Get Board</Button>
-      <Spacer p={5}/>
-      <SimpleGrid columns={5} spacing={10}>
-        {board.map((card) => (
-            renderCard(card)
-        )
-        )}
-      </SimpleGrid>
+      { board.length == 0 ?    
+      <Button onClick={handleLoadBoard}>Get Board</Button> :
+      <Flex direction="column">
+        <ChakraCard>
+          <CardBody bg={turn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
+            <Flex>
+              <Text>Clue: {clue!.word}, {clue!.number}</Text>
+              <Spacer />
+              <Text>Guesses Remaining: </Text>
+            </Flex>
+          </CardBody>
+        </ChakraCard>
+        <Spacer p={5}/>
+        <SimpleGrid columns={5} spacing={10}>
+          {board.map((card) => (
+              renderCard(card)
+          )
+          )}
+        </SimpleGrid>
+      </Flex>}
     </>
   )
 }

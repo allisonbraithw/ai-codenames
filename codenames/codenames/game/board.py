@@ -45,14 +45,14 @@ class Card():
         return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}, {self.is_revealed}"
         
 class Clue():
-    text: str
+    word: str
     number: int
     reasoning: str
     
-    def __init__(self, text: str, number: int, reasoning: str):
-        self.text = text
+    def __init__(self, word: str, number: int, reasoning: str):
+        self.word = word
         self.number = number
         self.reasoning = reasoning
         
     def __str__(self):
-        return f"Clue: {self.text}, {self.number}, {self.reasoning}"
+        return f"Clue: {self.word}, {self.number}, {self.reasoning}"

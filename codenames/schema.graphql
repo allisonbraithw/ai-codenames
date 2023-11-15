@@ -12,12 +12,29 @@ enum CardType {
   ASSASSIN
 }
 
+type Clue {
+  word: String
+  number: Int
+  reasoning: String
+}
+
+type Game {
+  board: [Card]
+  turn: Team
+  currentClue: Clue
+}
+
 type GuessCard {
   ok: Boolean
 }
 
+type InitializeGame {
+  game: Game
+}
+
 type Mutation {
   guessCard(position: PositionInput!): GuessCard
+  initializeGame: InitializeGame
 }
 
 type Position {
@@ -32,5 +49,10 @@ input PositionInput {
 
 type Query {
   card(position: PositionInput!): Card
-  board: [Card]
+  game: Game
+}
+
+enum Team {
+  RED
+  BLUE
 }

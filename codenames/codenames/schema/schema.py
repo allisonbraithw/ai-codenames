@@ -14,6 +14,13 @@ class CardType(graphene.Enum):
     def __str__(self):
         return self.name.replace('_', ' ').title()
     
+class Team(graphene.Enum):
+    RED = 1
+    BLUE = 2
+    
+    def __str__(self):
+        return self.name.replace('_', ' ').title()
+    
 class Position(graphene.ObjectType):
     x = graphene.Int()
     y = graphene.Int()
@@ -47,13 +54,17 @@ class Card(graphene.ObjectType):
         return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}, {self.is_revealed}"
         
 class Clue(graphene.ObjectType):
-    text = graphene.String()
+    word = graphene.String()
     number = graphene.Int()
     reasoning = graphene.String()
         
     def __str__(self):
-        return f"Clue: {self.text}, {self.number}, {self.reasoning}"
+        return f"Clue: {self.word}, {self.number}, {self.reasoning}"
         
+class Game(graphene.ObjectType):
+    board = graphene.List(Card)
+    turn = graphene.Field(Team)
+    current_clue = graphene.Field(Clue)
 
 class GuessCard(graphene.Mutation):
     class Arguments:
@@ -67,18 +78,30 @@ class GuessCard(graphene.Mutation):
         game.reveal_card(position)
         
         return GuessCard(ok=True)
+    
+class InitializeGame(graphene.Mutation):
+    game = graphene.Field(Game)
+    
+    def mutate(self, info):
+        game = CodenamesGame.get_game()
+        game.generate_clue()
+        
+        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue()))
 
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
+    initialize_game = InitializeGame.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
-    board = graphene.List(Card)
+    game = graphene.Field(Game)
     
-    def resolve_board(self, info):
+    def resolve_game(self, info):
         game = CodenamesGame.get_game()
-        return game.board
-
+        board = game.board
+        red_turn = game.red_turn
+        current_clue = game.get_current_clue()
+        return Game(board=board, turn={True: Team.RED, False: Team.BLUE}[red_turn], current_clue=current_clue)
 
 schema = build_schema(query=Query, mutation=Mutation)
 
