@@ -25,6 +25,7 @@ class CodenamesGame():
         self.blue_score = 0
         self.red_turn = True
         self.winner = None
+        self.turn_count = 0
         
     @classmethod
     def get_game(cls):
@@ -37,6 +38,7 @@ class CodenamesGame():
             self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))
         else:
             self.blue_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.blue_spymaster.id))
+        self.turn_count = self.get_current_clue().number + 1
         
     def get_current_clue(self) -> Clue:
         if self.red_turn:
