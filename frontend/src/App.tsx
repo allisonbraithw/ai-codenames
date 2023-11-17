@@ -23,6 +23,7 @@ const getBoardQueryDocument = graphql(`
         word
         number
       }
+      winner
     }
   }
 `)
@@ -72,6 +73,7 @@ function App() {
   const [ turn, setTurn ] = useState<Team>(Team.Red)
   const [ turnCount, setTurnCount ] = useState<number>(0)
   const [ clue, setClue ] = useState<Clue>()
+  const [ winner, setWinner ] = useState<Team>()
   const [ generateBoard ] = useMutation(initializeGameMutationDocument)
   const [ endTurn ] = useMutation(endTurnMutationDocument)
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
@@ -82,6 +84,7 @@ function App() {
         setTurn(data.game.turn!)
         setTurnCount(data.game.turnCount!)
         setClue(data.game.currentClue!)
+        setWinner(data.game.winner!)
       }
     },
     fetchPolicy: 'no-cache'
@@ -147,6 +150,7 @@ function App() {
     <>
       <h1>CodenamesAI</h1>
       <Spacer p={5}/>
+      { winner != null ? <Text>Winner: {winner}</Text> : null}
       { board.length == 0 ?    
       <Button onClick={handleLoadBoard}>Get Board</Button> :
       <Flex direction="column">

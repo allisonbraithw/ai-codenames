@@ -27,6 +27,7 @@ type Game {
   turn: Team
   turnCount: Int
   currentClue: Clue
+  winner: Team
 }
 
 type GuessCard {

@@ -66,6 +66,7 @@ class Game(graphene.ObjectType):
     turn = graphene.Field(Team)
     turn_count = graphene.Int()
     current_clue = graphene.Field(Clue)
+    winner = graphene.Field(Team)
 
 class GuessCard(graphene.Mutation):
     class Arguments:
@@ -117,7 +118,8 @@ class Query(graphene.ObjectType):
             board=board, 
             turn={True: Team.RED, False: Team.BLUE}[red_turn], 
             current_clue=current_clue,
-            turn_count=turn_count
+            turn_count=turn_count,
+            winner= Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None
             )
 
 schema = build_schema(query=Query, mutation=Mutation)

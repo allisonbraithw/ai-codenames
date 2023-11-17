@@ -62,6 +62,7 @@ class CodenamesGame():
                 if self.red_score == 9:
                     self.winner = "red"
                     self.game_recap()
+                    return
                 # it was blue's turn, so set turn to red and generate a new clue
                 if not self.red_turn:
                     self.end_turn()
@@ -76,6 +77,7 @@ class CodenamesGame():
                 if self.blue_score == 8:
                     self.winner = "blue"
                     self.game_recap()
+                    return
                 if self.red_turn:
                     self.end_turn()
                 else:
@@ -90,6 +92,7 @@ class CodenamesGame():
                 print("Assassin!\n")
                 self.winner = "blue" if self.red_turn else "red"
                 self.game_recap()
+                return
                 
     def end_turn(self):
         self.red_turn = not self.red_turn
