@@ -41,6 +41,7 @@ const initializeGameMutationDocument = graphql(`
           }
         }
         turn
+        turnCount
         currentClue {
           word
           number
@@ -84,6 +85,7 @@ function App() {
           console.log(data)
           setBoard(data.initializeGame.game!.board!.filter((card): card is Card => card !== null))
           setTurn(data.initializeGame.game!.turn!)
+          setTurnCount(data.initializeGame.game!.turnCount!)
           setClue(data.initializeGame.game!.currentClue!)
         }
       }

@@ -64,8 +64,7 @@ class CodenamesGame():
                     self.game_recap()
                 # it was blue's turn, so set turn to red and generate a new clue
                 if not self.red_turn:
-                    self.red_turn = True
-                    self.generate_clue()
+                    self.end_turn()
                 else:
                     self.turn_count -= 1
                     if self.turn_count <= 0:
@@ -78,8 +77,7 @@ class CodenamesGame():
                     self.winner = "blue"
                     self.game_recap()
                 if self.red_turn:
-                    self.red_turn = False
-                    self.generate_clue()
+                    self.end_turn()
                 else:
                     self.turn_count -= 1
                     if self.turn_count <= 0:
@@ -87,8 +85,7 @@ class CodenamesGame():
                         self.end_turn()
             case CardType.BYSTANDER:
                 print("Bystander!\n")
-                self.red_turn = not self.red_turn
-                self.generate_clue()
+                self.end_turn()
             case CardType.ASSASSIN:
                 print("Assassin!\n")
                 self.winner = "blue" if self.red_turn else "red"
@@ -96,6 +93,7 @@ class CodenamesGame():
                 
     def end_turn(self):
         self.red_turn = not self.red_turn
+        self.generate_clue()
 
     def initiate_board(self) -> List[Card]:
         # pick 25 random words from the word list

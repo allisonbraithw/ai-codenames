@@ -87,7 +87,7 @@ class InitializeGame(graphene.Mutation):
         game = CodenamesGame.get_game()
         game.generate_clue()
         
-        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue()))
+        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue(), turn_count=game.turn_count))
 
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
@@ -102,11 +102,12 @@ class Query(graphene.ObjectType):
         board = game.board
         red_turn = game.red_turn
         current_clue = game.get_current_clue()
+        turn_count = game.turn_count
         return Game(
             board=board, 
             turn={True: Team.RED, False: Team.BLUE}[red_turn], 
             current_clue=current_clue,
-            turn_count=game.turn_count
+            turn_count=turn_count
             )
 
 schema = build_schema(query=Query, mutation=Mutation)
