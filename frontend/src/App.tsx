@@ -1,5 +1,20 @@
 import { useState } from 'react'
-import { SimpleGrid, Box, Spacer, Flex, Text, Button, Card as ChakraCard, CardBody } from '@chakra-ui/react'
+import { 
+  SimpleGrid, 
+  Box, 
+  Spacer, 
+  Flex,
+  Text, 
+  Button, 
+  Card as ChakraCard, 
+  CardBody,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalCloseButton
+ } from '@chakra-ui/react'
 import { graphql } from "../src/gql"
 import { Card, Position, Team, Clue } from '../src/gql/graphql'
 import { useLazyQuery, useMutation } from '@apollo/client'
@@ -43,6 +58,7 @@ const initializeGameMutationDocument = graphql(`
         }
         turn
         turnCount
+        winner
         currentClue {
           word
           number
@@ -99,6 +115,7 @@ function App() {
           setTurn(data.initializeGame.game!.turn!)
           setTurnCount(data.initializeGame.game!.turnCount!)
           setClue(data.initializeGame.game!.currentClue!)
+          setWinner(data.initializeGame.game!.winner!)
         }
       }
     })
@@ -150,7 +167,16 @@ function App() {
     <>
       <h1>CodenamesAI</h1>
       <Spacer p={5}/>
-      { winner != null ? <Text>Winner: {winner}</Text> : null}
+      <Modal isOpen={winner != null} onClose={handleLoadBoard}>
+        <ModalOverlay />  
+        <ModalContent>
+          <ModalHeader>Winner: {winner}</ModalHeader>
+          <ModalCloseButton />
+          <ModalFooter>
+            <Button onClick={handleLoadBoard}>Play Again</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       { board.length == 0 ?    
       <Button onClick={handleLoadBoard}>Get Board</Button> :
       <Flex direction="column">
