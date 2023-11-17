@@ -88,10 +88,20 @@ class InitializeGame(graphene.Mutation):
         game.generate_clue()
         
         return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue(), turn_count=game.turn_count))
+    
+class EndTurn(graphene.Mutation):
+    ok = graphene.Boolean()
+    
+    def mutate(self, info):
+        game = CodenamesGame.get_game()
+        game.end_turn()
+        
+        return EndTurn(ok=True)
 
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
     initialize_game = InitializeGame.Field()
+    end_turn = EndTurn.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))

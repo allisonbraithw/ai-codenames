@@ -18,6 +18,10 @@ type Clue {
   reasoning: String
 }
 
+type EndTurn {
+  ok: Boolean
+}
+
 type Game {
   board: [Card]
   turn: Team
@@ -36,6 +40,7 @@ type InitializeGame {
 type Mutation {
   guessCard(position: PositionInput!): GuessCard
   initializeGame: InitializeGame
+  endTurn: EndTurn
 }
 
 type Position {

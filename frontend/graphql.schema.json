@@ -161,6 +161,29 @@
       },
       {
         "kind": "OBJECT",
+        "name": "EndTurn",
+        "description": null,
+        "fields": [
+          {
+            "name": "ok",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
         "name": "Game",
         "description": null,
         "fields": [
@@ -283,6 +306,18 @@
         "name": "Mutation",
         "description": null,
         "fields": [
+          {
+            "name": "endTurn",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "EndTurn",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "guessCard",
             "description": null,

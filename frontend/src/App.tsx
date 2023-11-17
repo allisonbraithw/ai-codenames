@@ -59,12 +59,21 @@ const guessCardMutationDocument = graphql(`
   }
 `)
 
+const endTurnMutationDocument = graphql(`
+  mutation EndTurnMutationDocument {
+    endTurn {
+      ok
+    }
+  }
+`)
+
 function App() {
   const [ board, setBoard ] = useState<Array<Card>>([])
   const [ turn, setTurn ] = useState<Team>(Team.Red)
   const [ turnCount, setTurnCount ] = useState<number>(0)
   const [ clue, setClue ] = useState<Clue>()
   const [ generateBoard ] = useMutation(initializeGameMutationDocument)
+  const [ endTurn ] = useMutation(endTurnMutationDocument)
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
     onCompleted: (data) => {
       if (data.game != null) {
@@ -104,6 +113,15 @@ function App() {
     }
   }
 
+  const handleEndTurn = async () => {
+    try {
+      await endTurn()
+      loadBoard()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const renderCard = (card: Card) => {
     const color = card.isRevealed ? getColorBasedOnType(card.typeValue!) : "#E2E8F0"
     return (
@@ -137,7 +155,10 @@ function App() {
             <Flex>
               <Text>Clue: {clue!.word}, {clue!.number}</Text>
               <Spacer />
-              <Text>Guesses Remaining: {turnCount}</Text>
+              <Flex gap={3}>
+                <Text>Guesses Remaining: {turnCount}</Text>
+                <Button onClick={handleEndTurn} size="xs">End Turn</Button>
+              </Flex>
             </Flex>
           </CardBody>
         </ChakraCard>
