@@ -18,6 +18,7 @@ const getBoardQueryDocument = graphql(`
         }
       }
       turn
+      turnCount
       currentClue {
         word
         number
@@ -60,6 +61,7 @@ const guessCardMutationDocument = graphql(`
 function App() {
   const [ board, setBoard ] = useState<Array<Card>>([])
   const [ turn, setTurn ] = useState<Team>(Team.Red)
+  const [ turnCount, setTurnCount ] = useState<number>(0)
   const [ clue, setClue ] = useState<Clue>()
   const [ generateBoard ] = useMutation(initializeGameMutationDocument)
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
@@ -68,6 +70,7 @@ function App() {
         console.log(data)
         setBoard(data.game.board!.filter((card): card is Card => card !== null))
         setTurn(data.game.turn!)
+        setTurnCount(data.game.turnCount!)
         setClue(data.game.currentClue!)
       }
     },
@@ -132,7 +135,7 @@ function App() {
             <Flex>
               <Text>Clue: {clue!.word}, {clue!.number}</Text>
               <Spacer />
-              <Text>Guesses Remaining: </Text>
+              <Text>Guesses Remaining: {turnCount}</Text>
             </Flex>
           </CardBody>
         </ChakraCard>

@@ -59,20 +59,32 @@ class CodenamesGame():
             case CardType.RED_AGENT:
                 print("Red agent!\n")
                 self.red_score += 1
+                if self.red_score == 9:
+                    self.winner = "red"
+                    self.game_recap()
                 # it was blue's turn, so set turn to red and generate a new clue
                 if not self.red_turn:
                     self.red_turn = True
                     self.generate_clue()
-                if self.red_score == 9:
-                    self.winner = "red"
+                else:
+                    self.turn_count -= 1
+                    if self.turn_count <= 0:
+                        print(f"Out of turns!")
+                        self.end_turn()
             case CardType.BLUE_AGENT:
                 print("Blue agent!\n")
                 self.blue_score += 1
+                if self.blue_score == 8:
+                    self.winner = "blue"
+                    self.game_recap()
                 if self.red_turn:
                     self.red_turn = False
                     self.generate_clue()
-                if self.blue_score == 8:
-                    self.winner = "blue"
+                else:
+                    self.turn_count -= 1
+                    if self.turn_count <= 0:
+                        print(f"Out of turns!")
+                        self.end_turn()
             case CardType.BYSTANDER:
                 print("Bystander!\n")
                 self.red_turn = not self.red_turn
@@ -80,6 +92,7 @@ class CodenamesGame():
             case CardType.ASSASSIN:
                 print("Assassin!\n")
                 self.winner = "blue" if self.red_turn else "red"
+                self.game_recap()
                 
     def end_turn(self):
         self.red_turn = not self.red_turn
@@ -110,6 +123,11 @@ class CodenamesGame():
         # board_string = "\n".join([str(card) for card in final_board])
         # print(board_string)
         return deck
+    
+    def game_recap(self):
+        print("Game Recap:\n")
+        print(f"Red clues: {[str(clue) for clue in self.red_clues]}\n")
+        print(f"Blue clues: {[str(clue) for clue in self.blue_clues]}\n")
 
 def random_position(position_opts) -> Position:
     coords = random.choice(position_opts)

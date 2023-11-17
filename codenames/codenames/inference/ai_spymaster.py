@@ -46,6 +46,7 @@ def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> 
     try:
         json_clue = json.loads(clue)
     except json.JSONDecodeError:
+        print(clue)
         raise Exception("Clue not returned in json format")
     # return the clue as a Clue object
     return Clue(word=json_clue["word"], number=int(json_clue["number"]), reasoning=json_clue["reasoning"])
