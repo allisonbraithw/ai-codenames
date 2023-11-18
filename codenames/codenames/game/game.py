@@ -33,6 +33,11 @@ class CodenamesGame():
             cls._instance = CodenamesGame()
         return cls._instance
     
+    @classmethod
+    def new_game(cls):
+        cls._instance = CodenamesGame()
+        return cls._instance
+    
     def generate_clue(self):
         if self.red_turn:
             self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))

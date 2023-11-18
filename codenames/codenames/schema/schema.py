@@ -85,7 +85,7 @@ class InitializeGame(graphene.Mutation):
     game = graphene.Field(Game)
     
     def mutate(self, info):
-        game = CodenamesGame.get_game()
+        game = CodenamesGame.new_game()
         game.generate_clue()
         
         return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue(), turn_count=game.turn_count))
