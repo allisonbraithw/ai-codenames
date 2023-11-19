@@ -66,6 +66,8 @@ class Game(graphene.ObjectType):
     turn = graphene.Field(Team)
     turn_count = graphene.Int()
     current_clue = graphene.Field(Clue)
+    red_clues = graphene.List(Clue)
+    blue_clues = graphene.List(Clue)
     winner = graphene.Field(Team)
 
 class GuessCard(graphene.Mutation):
@@ -98,11 +100,21 @@ class EndTurn(graphene.Mutation):
         game.end_turn()
         
         return EndTurn(ok=True)
+    
+class EndGame(graphene.Mutation):
+    ok = graphene.Boolean()
+    
+    def mutate(self, info):
+        game = CodenamesGame.get_game()
+        game.end_game()
+        
+        return EndGame(ok=True)
 
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
     initialize_game = InitializeGame.Field()
     end_turn = EndTurn.Field()
+    end_game = EndGame.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
@@ -119,7 +131,9 @@ class Query(graphene.ObjectType):
             turn={True: Team.RED, False: Team.BLUE}[red_turn], 
             current_clue=current_clue,
             turn_count=turn_count,
-            winner= Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None
+            winner= Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None,
+            red_clues=[Clue(word=clue.word, number=clue.number, reasoning=clue.reasoning) for clue in game.red_clues],
+            blue_clues=[Clue(word=clue.word, number=clue.number, reasoning=clue.reasoning) for clue in game.blue_clues],
             )
 
 schema = build_schema(query=Query, mutation=Mutation)

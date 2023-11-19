@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   SimpleGrid, 
   Box, 
@@ -8,12 +8,17 @@ import {
   Button, 
   Card as ChakraCard, 
   CardBody,
+  CardHeader,
+  Heading,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalFooter,
-  ModalCloseButton
+  ModalCloseButton,
+  ModalBody,
+  Stack,
+  StackDivider
  } from '@chakra-ui/react'
 import { graphql } from "../src/gql"
 import { Card, Position, Team, Clue } from '../src/gql/graphql'
@@ -39,6 +44,23 @@ const getBoardQueryDocument = graphql(`
         number
       }
       winner
+    }
+  }
+`)
+
+const getGameRecapQueryDocument = graphql(`
+  query GetGameRecapQueryDocument {
+    game {
+      redClues {
+        word
+        number
+        reasoning
+      }
+      blueClues {
+        word
+        number
+        reasoning
+      }
     }
   }
 `)
@@ -84,14 +106,35 @@ const endTurnMutationDocument = graphql(`
   }
 `)
 
+const endGameMutationDocument = graphql(`
+  mutation EndGameMutationDocument {
+    endGame {
+      ok
+    }
+  }
+`)
+
 function App() {
   const [ board, setBoard ] = useState<Array<Card>>([])
   const [ turn, setTurn ] = useState<Team>(Team.Red)
   const [ turnCount, setTurnCount ] = useState<number>(0)
   const [ clue, setClue ] = useState<Clue>()
   const [ winner, setWinner ] = useState<Team>()
+  const [ redClues, setRedClues ] = useState<Array<Clue>>([])
+  const [ blueClues, setBlueClues ] = useState<Array<Clue>>([])
   const [ generateBoard ] = useMutation(initializeGameMutationDocument)
   const [ endTurn ] = useMutation(endTurnMutationDocument)
+  const [ endGame ] = useMutation(endGameMutationDocument)
+  const [ getGameRecap ] = useLazyQuery(getGameRecapQueryDocument, {
+    onCompleted: (data) => {
+      if (data.game != null) {
+        console.log(data)
+        setRedClues(data.game.redClues!.filter((clue): clue is Clue => clue !== null))
+        setBlueClues(data.game.blueClues!.filter((clue): clue is Clue => clue !== null))
+      }
+    },
+    fetchPolicy: 'no-cache'
+  })
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
     onCompleted: (data) => {
       if (data.game != null) {
@@ -121,6 +164,13 @@ function App() {
     })
   }
 
+  // use effect to load the recap when winner changes
+  useEffect(() => {
+    if (winner != null) {
+      getGameRecap()
+    }
+  }, [winner, getGameRecap])
+
   const handleGuessCard = async (position: Position) => {
     try {
       await guessCard({ variables: { "position": {
@@ -136,6 +186,15 @@ function App() {
   const handleEndTurn = async () => {
     try {
       await endTurn()
+      loadBoard()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleEndGame = async () => { 
+    try {
+      await endGame()
       loadBoard()
     } catch (e) {
       console.log(e)
@@ -162,16 +221,44 @@ function App() {
     )
   }
 
+  const renderClues = (clues: Array<Clue>) => {
+    return (
+      <Flex direction="column">
+        <Stack divider={<StackDivider />} spacing={3}>
+        {clues.map((clue) => (
+          <Flex direction="column" key={`${clue.word}-${clue.number}`}>
+            <Box>
+              <Heading size='xs' textTransform='uppercase'>{clue.word}</Heading>
+              <Text>{clue.reasoning}</Text>
+            </Box>
+          </Flex>
+        ))}
+        </Stack>
+      </Flex>
+    )
+  }
+
 
   return (
     <>
       <h1>CodenamesAI</h1>
       <Spacer p={5}/>
-      <Modal isOpen={winner != null} onClose={handleLoadBoard}>
+      <Modal isOpen={winner != null} onClose={handleLoadBoard} size='xl'>
         <ModalOverlay />  
         <ModalContent>
           <ModalHeader>Winner: {winner}</ModalHeader>
           <ModalCloseButton />
+          <ModalBody>
+            <Flex direction="column">
+              <ChakraCard bg="#FEB2B2">
+                <CardBody>{renderClues(redClues)}</CardBody>
+              </ChakraCard>
+              <Spacer p={5}/>
+              <ChakraCard bg="#BEE3F8">
+                <CardBody>{renderClues(blueClues)}</CardBody>
+              </ChakraCard>
+            </Flex>
+          </ModalBody>
           <ModalFooter>
             <Button onClick={handleLoadBoard}>Play Again</Button>
           </ModalFooter>
@@ -188,6 +275,7 @@ function App() {
               <Flex gap={3}>
                 <Text>Guesses Remaining: {turnCount}</Text>
                 <Button onClick={handleEndTurn} size="xs">End Turn</Button>
+                <Button onClick={handleEndGame} size="xs">End Game</Button>
               </Flex>
             </Flex>
           </CardBody>

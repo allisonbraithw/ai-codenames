@@ -38,6 +38,11 @@ export type Clue = {
   word?: Maybe<Scalars['String']['output']>;
 };
 
+export type EndGame = {
+  __typename?: 'EndGame';
+  ok?: Maybe<Scalars['Boolean']['output']>;
+};
+
 export type EndTurn = {
   __typename?: 'EndTurn';
   ok?: Maybe<Scalars['Boolean']['output']>;
@@ -45,8 +50,10 @@ export type EndTurn = {
 
 export type Game = {
   __typename?: 'Game';
+  blueClues?: Maybe<Array<Maybe<Clue>>>;
   board?: Maybe<Array<Maybe<Card>>>;
   currentClue?: Maybe<Clue>;
+  redClues?: Maybe<Array<Maybe<Clue>>>;
   turn?: Maybe<Team>;
   turnCount?: Maybe<Scalars['Int']['output']>;
   winner?: Maybe<Team>;
@@ -64,6 +71,7 @@ export type InitializeGame = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  endGame?: Maybe<EndGame>;
   endTurn?: Maybe<EndTurn>;
   guessCard?: Maybe<GuessCard>;
   initializeGame?: Maybe<InitializeGame>;
@@ -106,6 +114,11 @@ export type GetBoardQueryDocumentQueryVariables = Exact<{ [key: string]: never; 
 
 export type GetBoardQueryDocumentQuery = { __typename?: 'Query', game?: { __typename?: 'Game', turn?: Team | null, turnCount?: number | null, winner?: Team | null, board?: Array<{ __typename?: 'Card', wordValue?: string | null, typeValue?: CardType | null, isRevealed?: boolean | null, position?: { __typename?: 'Position', x?: number | null, y?: number | null } | null } | null> | null, currentClue?: { __typename?: 'Clue', word?: string | null, number?: number | null } | null } | null };
 
+export type GetGameRecapQueryDocumentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetGameRecapQueryDocumentQuery = { __typename?: 'Query', game?: { __typename?: 'Game', redClues?: Array<{ __typename?: 'Clue', word?: string | null, number?: number | null, reasoning?: string | null } | null> | null, blueClues?: Array<{ __typename?: 'Clue', word?: string | null, number?: number | null, reasoning?: string | null } | null> | null } | null };
+
 export type InitializeGameMutationDocumentMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -123,8 +136,15 @@ export type EndTurnMutationDocumentMutationVariables = Exact<{ [key: string]: ne
 
 export type EndTurnMutationDocumentMutation = { __typename?: 'Mutation', endTurn?: { __typename?: 'EndTurn', ok?: boolean | null } | null };
 
+export type EndGameMutationDocumentMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EndGameMutationDocumentMutation = { __typename?: 'Mutation', endGame?: { __typename?: 'EndGame', ok?: boolean | null } | null };
+
 
 export const GetBoardQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBoardQueryDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"turn"}},{"kind":"Field","name":{"kind":"Name","value":"turnCount"}},{"kind":"Field","name":{"kind":"Name","value":"currentClue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}}]}},{"kind":"Field","name":{"kind":"Name","value":"winner"}}]}}]}}]} as unknown as DocumentNode<GetBoardQueryDocumentQuery, GetBoardQueryDocumentQueryVariables>;
+export const GetGameRecapQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGameRecapQueryDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"redClues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"reasoning"}}]}},{"kind":"Field","name":{"kind":"Name","value":"blueClues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"reasoning"}}]}}]}}]}}]} as unknown as DocumentNode<GetGameRecapQueryDocumentQuery, GetGameRecapQueryDocumentQueryVariables>;
 export const InitializeGameMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"InitializeGameMutationDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializeGame"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"turn"}},{"kind":"Field","name":{"kind":"Name","value":"turnCount"}},{"kind":"Field","name":{"kind":"Name","value":"winner"}},{"kind":"Field","name":{"kind":"Name","value":"currentClue"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}}]}}]}}]}}]}}]} as unknown as DocumentNode<InitializeGameMutationDocumentMutation, InitializeGameMutationDocumentMutationVariables>;
 export const GuessCardMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GuessCardMutationDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"position"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PositionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"guessCard"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"position"},"value":{"kind":"Variable","name":{"kind":"Name","value":"position"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<GuessCardMutationDocumentMutation, GuessCardMutationDocumentMutationVariables>;
 export const EndTurnMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EndTurnMutationDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endTurn"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<EndTurnMutationDocumentMutation, EndTurnMutationDocumentMutationVariables>;
+export const EndGameMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EndGameMutationDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endGame"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<EndGameMutationDocumentMutation, EndGameMutationDocumentMutationVariables>;

@@ -38,6 +38,10 @@ class CodenamesGame():
         cls._instance = CodenamesGame()
         return cls._instance
     
+    # Temp - want this for troubleshooting so I don't have to play a full game
+    def end_game(self):
+        self.winner = "red" if self.red_turn else "blue"
+    
     def generate_clue(self):
         if self.red_turn:
             self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))

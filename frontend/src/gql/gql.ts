@@ -14,9 +14,11 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 const documents = {
     "\n  query GetBoardQueryDocument {\n    game {\n      board {\n        wordValue\n        typeValue\n        isRevealed\n        position {\n          x\n          y\n        }\n      }\n      turn\n      turnCount\n      currentClue {\n        word\n        number\n      }\n      winner\n    }\n  }\n": types.GetBoardQueryDocumentDocument,
+    "\n  query GetGameRecapQueryDocument {\n    game {\n      redClues {\n        word\n        number\n        reasoning\n      }\n      blueClues {\n        word\n        number\n        reasoning\n      }\n    }\n  }\n": types.GetGameRecapQueryDocumentDocument,
     "\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        turnCount\n        winner\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n": types.InitializeGameMutationDocumentDocument,
     "\n  mutation GuessCardMutationDocument($position: PositionInput!) {\n    guessCard(position: $position) {\n      ok\n    }\n  }\n": types.GuessCardMutationDocumentDocument,
     "\n  mutation EndTurnMutationDocument {\n    endTurn {\n      ok\n    }\n  }\n": types.EndTurnMutationDocumentDocument,
+    "\n  mutation EndGameMutationDocument {\n    endGame {\n      ok\n    }\n  }\n": types.EndGameMutationDocumentDocument,
 };
 
 /**
@@ -40,6 +42,10 @@ export function graphql(source: "\n  query GetBoardQueryDocument {\n    game {\n
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query GetGameRecapQueryDocument {\n    game {\n      redClues {\n        word\n        number\n        reasoning\n      }\n      blueClues {\n        word\n        number\n        reasoning\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetGameRecapQueryDocument {\n    game {\n      redClues {\n        word\n        number\n        reasoning\n      }\n      blueClues {\n        word\n        number\n        reasoning\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        turnCount\n        winner\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation InitializeGameMutationDocument {\n    initializeGame {\n      game {\n        board {\n          wordValue\n          typeValue\n          isRevealed\n          position {\n            x\n            y\n          }\n        }\n        turn\n        turnCount\n        winner\n        currentClue {\n          word\n          number\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -49,6 +55,10 @@ export function graphql(source: "\n  mutation GuessCardMutationDocument($positio
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation EndTurnMutationDocument {\n    endTurn {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation EndTurnMutationDocument {\n    endTurn {\n      ok\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation EndGameMutationDocument {\n    endGame {\n      ok\n    }\n  }\n"): (typeof documents)["\n  mutation EndGameMutationDocument {\n    endGame {\n      ok\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
