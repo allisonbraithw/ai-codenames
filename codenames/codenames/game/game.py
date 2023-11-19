@@ -44,8 +44,10 @@ class CodenamesGame():
     
     def generate_clue(self):
         if self.red_turn:
+            print("generating red clue\n")
             self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))
         else:
+            print("generating blue clue\n")
             self.blue_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.blue_spymaster.id))
         self.turn_count = self.get_current_clue().number + 1
         
@@ -105,7 +107,7 @@ class CodenamesGame():
                 
     def end_turn(self):
         self.red_turn = not self.red_turn
-        self.generate_clue()
+        # self.generate_clue()
 
     def initiate_board(self) -> List[Card]:
         # pick 25 random words from the word list
