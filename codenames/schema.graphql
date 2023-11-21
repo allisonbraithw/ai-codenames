@@ -36,6 +36,10 @@ type Game {
   winner: Team
 }
 
+type GenerateClue {
+  ok: Boolean
+}
+
 type GuessCard {
   ok: Boolean
 }
@@ -49,6 +53,7 @@ type Mutation {
   initializeGame: InitializeGame
   endTurn: EndTurn
   endGame: EndGame
+  generateClue: GenerateClue
 }
 
 type Position {

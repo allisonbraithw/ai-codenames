@@ -69,6 +69,30 @@ class Game(graphene.ObjectType):
     red_clues = graphene.List(Clue)
     blue_clues = graphene.List(Clue)
     winner = graphene.Field(Team)
+    
+    def resolve_board(parent, info):
+        return parent.board
+    
+    def resolve_turn(parent, info):
+        game = CodenamesGame.get_game()
+        return {True: Team.RED, False: Team.BLUE}[game.red_turn]
+    
+    def resolve_turn_count(parent, info):
+        return parent.turn_count
+    
+    def resolve_current_clue(parent, info):
+        game = CodenamesGame.get_game()
+        return game.get_current_clue()
+    
+    def resolve_red_clues(parent, info):
+        return parent.red_clues
+    
+    def resolve_blue_clues(parent, info):
+        return parent.blue_clues
+    
+    def resolve_winner(parent, info):
+        game = CodenamesGame.get_game()
+        return Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None
 
 class GuessCard(graphene.Mutation):
     class Arguments:
@@ -109,12 +133,23 @@ class EndGame(graphene.Mutation):
         game.end_game()
         
         return EndGame(ok=True)
+    
+class GenerateClue(graphene.Mutation):
+    # clue = graphene.Field(Clue)
+    ok = graphene.Boolean()
+    
+    def mutate(self, info):
+        game = CodenamesGame.get_game()
+        game.generate_clue()
+        
+        return GenerateClue(ok=True)
 
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
     initialize_game = InitializeGame.Field()
     end_turn = EndTurn.Field()
     end_game = EndGame.Field()
+    generate_clue = GenerateClue.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
@@ -122,19 +157,7 @@ class Query(graphene.ObjectType):
     
     def resolve_game(self, info):
         game = CodenamesGame.get_game()
-        board = game.board
-        red_turn = game.red_turn
-        current_clue = game.get_current_clue()
-        turn_count = game.turn_count
-        return Game(
-            board=board, 
-            turn={True: Team.RED, False: Team.BLUE}[red_turn], 
-            current_clue=current_clue,
-            turn_count=turn_count,
-            winner= Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None,
-            red_clues=[Clue(word=clue.word, number=clue.number, reasoning=clue.reasoning) for clue in game.red_clues],
-            blue_clues=[Clue(word=clue.word, number=clue.number, reasoning=clue.reasoning) for clue in game.blue_clues],
-            )
+        return game
 
 schema = build_schema(query=Query, mutation=Mutation)
 
