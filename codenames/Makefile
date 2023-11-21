@@ -9,3 +9,7 @@ run:
 
 play-cli:
 	poetry run python codenames/game/game.py
+
+.PHONY: requirements.txt
+requirements.txt:
+	poetry export -f requirements.txt --output requirements.txt --without-hashes
