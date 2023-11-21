@@ -5,8 +5,8 @@ from typing import List
 
 
 # from codenames.game.board import initiate_board
-from codenames.game.board import Card, Clue
-from codenames.dependency_factory import dependency_factory as df
+from game.board import Card, Clue
+from dependency_factory import dependency_factory as df
 
 load_dotenv()
 

@@ -2,7 +2,7 @@ import graphene
 from typing import List
 from graphene_federation import build_schema
 
-from codenames.game.game import CodenamesGame
+from game.game import CodenamesGame
 
 # Define card type enum
 class CardType(graphene.Enum):

@@ -5,8 +5,10 @@ import { ChakraProvider } from '@chakra-ui/react'
 import App from './App.tsx'
 import './index.css'
 
+const BASE_GRAPHQL_URL = import.meta.env.VITE_BASE_GRAPHQL_URL;
+
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
+  uri: BASE_GRAPHQL_URL,
   cache: new InMemoryCache(),
 })
 
