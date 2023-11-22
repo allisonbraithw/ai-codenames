@@ -208,7 +208,10 @@ function App() {
     generateClue()
   }, [turn, generateClue])
 
-  const handleGuessCard = async (position: Position) => {
+  const handleGuessCard = async (position: Position, isRevealed: boolean) => {
+    if (clueLoading || isRevealed) {
+      return
+    }
     try {
       await guessCard({ variables: { "position": {
         x: position.x,
@@ -249,7 +252,11 @@ function App() {
         alignItems="center" 
         justifyContent="center"
         key={`${card?.position?.x}-${card?.position?.y}`}
-        onClick={() => handleGuessCard(card!.position!)}
+        onClick={() => handleGuessCard(card!.position!, card!.isRevealed!)}
+        cursor={card.isRevealed || clueLoading ? "default" : "pointer"}
+        _hover={{
+          boxShadow: card.isRevealed || clueLoading ? undefined : 'md',
+        }}
         >
           <Flex direction="column">
             <Text>{card?.wordValue}</Text>
