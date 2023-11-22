@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_graphql import GraphQLView
@@ -6,9 +7,10 @@ from flask_cors import CORS
 from schema.schema import schema
 
 load_dotenv()
+BASE_URL = os.getenv("BASE_URL")
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5173","https://codenames-frontend-ka2xis5sma-uc.a.run.app","https://codenames.arb.haus"])
+CORS(app, origins=["http://localhost:5173","https://codenames.arb.haus", BASE_URL])
 app.debug = True
 
 app.add_url_rule(
