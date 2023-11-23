@@ -88,10 +88,6 @@ const initializeGameMutationDocument = graphql(`
         turn
         turnCount
         winner
-        currentClue {
-          word
-          number
-        }
       }
     }
   }
@@ -146,6 +142,7 @@ function App() {
         console.log(data)
         setRedClues(data.game.redClues!.filter((clue): clue is Clue => clue !== null))
         setBlueClues(data.game.blueClues!.filter((clue): clue is Clue => clue !== null))
+        setTurn(Team.Blue)
       }
     },
     fetchPolicy: 'no-cache'
@@ -181,6 +178,8 @@ function App() {
       }
     }
   })
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [shouldGenerateClue, setShouldGenerateClue] = useState(false);
 
   const handleGenerateBoard = () => {
     generateBoard({
@@ -190,8 +189,9 @@ function App() {
           setBoard(data.initializeGame.game!.board!.filter((card): card is Card => card !== null))
           setTurn(data.initializeGame.game!.turn!)
           setTurnCount(data.initializeGame.game!.turnCount!)
-          setClue(data.initializeGame.game!.currentClue!)
           setWinner(data.initializeGame.game!.winner!)
+          setClue(undefined)
+          setShouldGenerateClue(true)
         }
       }
     })
@@ -205,8 +205,13 @@ function App() {
   }, [winner, getGameRecap])
 
   useEffect(() => {
+    if (!isInitialized) {
+      setIsInitialized(true);
+      return
+    }
+    console.log(turn)
     generateClue()
-  }, [turn, generateClue])
+  }, [turn, generateClue, isInitialized])
 
   const handleGuessCard = async (position: Position, isRevealed: boolean) => {
     if (clueLoading || isRevealed) {
@@ -314,7 +319,7 @@ function App() {
         <ChakraCard>
           <CardBody bg={turn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
             <Flex>
-              { clueLoading ? <Flex gap={3}><Text>Generating Clue...</Text><Spinner /></Flex> : 
+              { clueLoading || !clue ? <Flex gap={3}><Text>Generating Clue...</Text><Spinner /></Flex> : 
               <>
                 <Text>Clue: {clue!.word}, {clue!.number}</Text>
                 <Spacer />
