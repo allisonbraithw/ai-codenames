@@ -2,7 +2,7 @@
 generate: schema.graphql
 
 schema.graphql: codenames/schema/schema.py
-	poetry run python codenames/schema/schema.py > schema.graphql
+	PYTHONPATH=/Users/allisonbraithwaite/Projects/ai-codenames/codenames/codenames poetry run python codenames/schema/schema.py > schema.graphql
 
 run: 
 	poetry run python codenames/main.py --reload

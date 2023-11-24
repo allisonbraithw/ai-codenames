@@ -112,9 +112,8 @@ class InitializeGame(graphene.Mutation):
     
     def mutate(self, info):
         game = CodenamesGame.new_game()
-        game.generate_clue()
         
-        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], current_clue=game.get_current_clue(), turn_count=game.turn_count))
+        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], turn_count=game.turn_count))
     
 class EndTurn(graphene.Mutation):
     ok = graphene.Boolean()
