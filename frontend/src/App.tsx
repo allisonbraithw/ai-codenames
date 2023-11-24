@@ -150,9 +150,13 @@ function App() {
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
     onCompleted: (data) => {
       if (data.game != null) {
+        const prevTurn = turn
         console.log(data)
         setBoard(data.game.board!.filter((card): card is Card => card !== null))
         setTurn(data.game.turn!)
+        if (prevTurn != data.game.turn) {
+          setShouldGenerateClue(true)
+        }
         setTurnCount(data.game.turnCount!)
         setWinner(data.game.winner!)
       }
@@ -209,9 +213,12 @@ function App() {
       setIsInitialized(true);
       return
     }
-    console.log(turn)
-    generateClue()
-  }, [turn, generateClue, isInitialized])
+    if (shouldGenerateClue) {
+      console.log(turn)
+      generateClue()
+      setShouldGenerateClue(false)
+    }
+  }, [turn, generateClue, shouldGenerateClue, isInitialized])
 
   const handleGuessCard = async (position: Position, isRevealed: boolean) => {
     if (clueLoading || isRevealed) {
