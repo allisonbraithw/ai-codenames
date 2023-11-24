@@ -1,0 +1,40 @@
+name: Build and Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "codenames/**"
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup GCP Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker
+
+      - name: Build and push image to Google Container Registry
+        run: |
+          docker build -t us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-backend:$GITHUB_SHA ./graphene-backend
+          docker push us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-backend:$GITHUB_SHA
+
+      - name: Deploy to Google Cloud Run
+        run: |
+          gcloud run deploy codenames-backend \
+            --image us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-backend:$GITHUB_SHA \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
