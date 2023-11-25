@@ -44,16 +44,11 @@ type GuessCard {
   ok: Boolean
 }
 
-type InitializeGame {
-  game: Game
-}
-
 type Mutation {
-  guessCard(position: PositionInput!): GuessCard
-  initializeGame: InitializeGame
-  endTurn: EndTurn
-  endGame: EndGame
-  generateClue: GenerateClue
+  guessCard(position: PositionInput!, roomId: ID!): GuessCard
+  endTurn(roomId: ID!): EndTurn
+  endGame(roomId: ID!): EndGame
+  generateClue(roomId: ID!): GenerateClue
   startRoom: StartRoom
 }
 

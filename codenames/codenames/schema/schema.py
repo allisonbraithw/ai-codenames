@@ -1,6 +1,7 @@
 import graphene
 import time
 import json
+import random
 from typing import List
 from graphene_federation import build_schema
 
@@ -8,6 +9,8 @@ from game.game import CodenamesGame
 from dependency_factory import dependency_factory as df
 
 redis_client = df.redis_client
+
+# region ObjectTypes
 
 # Define card type enum
 class CardType(graphene.Enum):
@@ -79,15 +82,13 @@ class Game(graphene.ObjectType):
         return parent.board
     
     def resolve_turn(parent, info):
-        game = CodenamesGame.get_game()
-        return {True: Team.RED, False: Team.BLUE}[game.red_turn]
+        return {True: Team.RED, False: Team.BLUE}[parent.red_turn]
     
     def resolve_turn_count(parent, info):
         return parent.turn_count
     
     def resolve_current_clue(parent, info):
-        game = CodenamesGame.get_game()
-        return game.get_current_clue()
+        return parent.get_current_clue()
     
     def resolve_red_clues(parent, info):
         return parent.red_clues
@@ -96,9 +97,7 @@ class Game(graphene.ObjectType):
         return parent.blue_clues
     
     def resolve_winner(parent, info):
-        game = CodenamesGame.get_game()
-        return Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None
-
+        return Team.RED if parent.winner == "red" else Team.BLUE if parent.winner == "blue" else None
 
 class Room(graphene.ObjectType):
     id = graphene.ID()
@@ -114,16 +113,21 @@ class Room(graphene.ObjectType):
     def resolve_id(parent, info):
         return parent.id
 
+# endregion
+
+# region Mutations
 class GuessCard(graphene.Mutation):
     class Arguments:
         position = PositionInput(required=True)
+        room_id = graphene.NonNull(graphene.ID)
     
     # todo(arb) error handling
     ok = graphene.Boolean()
     
-    def mutate(self, info, position):
-        game = CodenamesGame.get_game()
+    def mutate(self, info, position, room_id):
+        game = load_from_redis(room_id)
         game.reveal_card(position)
+        redis_client.set(room_id, json.dumps(game.to_serializable()))
         
         return GuessCard(ok=True)
   
@@ -132,50 +136,54 @@ class StartRoom(graphene.Mutation):
     
     def mutate(self, info):
         # generate ID
-        room = Room(id="1", name=f"test-{time.time()}", game=CodenamesGame.new_game())
+        room_id = generate_room_id()
+        room = Room(id=room_id, name=f"test-{time.time()}", game=CodenamesGame.new_game())
         # put into upstash redis
-        redis_client.set("1", json.dumps(room.game.to_serializable()))
+        redis_client.set(room_id, json.dumps(room.game.to_serializable()))
         return StartRoom(room=room)
     
-class InitializeGame(graphene.Mutation):
-    game = graphene.Field(Game)
-    
-    def mutate(self, info):
-        game = CodenamesGame.new_game()
-        
-        return InitializeGame(game=Game(board=game.board, turn={True: Team.RED, False: Team.BLUE}[game.red_turn], turn_count=game.turn_count))
-    
 class EndTurn(graphene.Mutation):
+    class Arguments:
+        room_id = graphene.NonNull(graphene.ID)
     ok = graphene.Boolean()
     
-    def mutate(self, info):
-        game = CodenamesGame.get_game()
+    def mutate(self, info, room_id):
+        game = load_from_redis(room_id)
         game.end_turn()
+        redis_client.set(room_id, json.dumps(game.to_serializable()))
         
         return EndTurn(ok=True)
     
 class EndGame(graphene.Mutation):
+    class Arguments:
+        room_id = graphene.NonNull(graphene.ID)
+        
     ok = graphene.Boolean()
     
-    def mutate(self, info):
-        game = CodenamesGame.get_game()
+    def mutate(self, info, room_id):
+        game = load_from_redis(room_id)
         game.end_game()
+        redis_client.set(room_id, json.dumps(game.to_serializable()))
         
         return EndGame(ok=True)
     
 class GenerateClue(graphene.Mutation):
-    # clue = graphene.Field(Clue)
+    class Arguments:
+        room_id = graphene.NonNull(graphene.ID)
+        
     ok = graphene.Boolean()
     
-    def mutate(self, info):
-        game = CodenamesGame.get_game()
+    def mutate(self, info, room_id):
+        game = load_from_redis(room_id)
         game.generate_clue()
+        redis_client.set(room_id, json.dumps(game.to_serializable()))
         
         return GenerateClue(ok=True)
 
+# endregion
+
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
-    initialize_game = InitializeGame.Field()
     end_turn = EndTurn.Field()
     end_game = EndGame.Field()
     generate_clue = GenerateClue.Field()
@@ -186,19 +194,31 @@ class Query(graphene.ObjectType):
     game = graphene.Field(Game, room_id=graphene.NonNull(graphene.ID))
     
     def resolve_game(self, info, room_id):
-        # game = CodenamesGame.get_game()
-        game_json = json.loads(redis_client.get(room_id))
-        return CodenamesGame.from_dict(game_json)
+        return load_from_redis(room_id)
 
 schema = build_schema(query=Query, mutation=Mutation)
 
-# Helpers
+# region Helpers
 def user_guesses(board: List[Card], guess: Card) -> CardType:
     """Given a board and a guess, return the type of the card"""
     for card in board:
         if card.position == guess.position:
             return card.type_value
     raise Exception("Card not found in board")
+  
+def load_from_redis(room_id: str):
+    game_json = json.loads(redis_client.get(room_id))
+    return CodenamesGame.from_dict(game_json)
+
+adjectives = ["happy", "jolly", "bright", "clever", "quick"]
+nouns = ["eagle", "panther", "lion", "tiger", "shark"]
+
+def generate_room_id():
+    adjective = random.choice(adjectives)
+    noun = random.choice(nouns)
+    return f"{adjective}_{noun}"
+    
+# endregion
 
 if __name__ == "__main__":
     from graphql import graphql

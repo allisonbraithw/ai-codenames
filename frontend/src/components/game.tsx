@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom';
 import { 
   SimpleGrid, 
   Box, 
@@ -72,60 +73,40 @@ const getGameRecapQueryDocument = graphql(`
   }
 `)
 
-// const initializeGameMutationDocument = graphql(`
-//   mutation InitializeGameMutationDocument($roomId: ID!) {
-//     initializeGame {
-//       game(roomId: $roomId) {
-//         board {
-//           wordValue
-//           typeValue
-//           isRevealed
-//           position {
-//             x
-//             y
-//           }
-//         }
-//         turn
-//         turnCount
-//         winner
-//       }
-//     }
-//   }
-// `)
-
 const guessCardMutationDocument = graphql(`
-  mutation GuessCardMutationDocument($position: PositionInput!) {
-    guessCard(position: $position) {
+  mutation GuessCardMutationDocument($position: PositionInput!, $roomId: ID!) {
+    guessCard(position: $position, roomId: $roomId) {
       ok
     }
   }
 `)
 
 const endTurnMutationDocument = graphql(`
-  mutation EndTurnMutationDocument {
-    endTurn {
+  mutation EndTurnMutationDocument($roomId: ID!) {
+    endTurn(roomId: $roomId) {
       ok
     }
   }
 `)
 
 const endGameMutationDocument = graphql(`
-  mutation EndGameMutationDocument {
-    endGame {
+  mutation EndGameMutationDocument($roomId: ID!) {
+    endGame(roomId: $roomId) {
       ok
     }
   }
 `)
 
 const generateClueMutationDocument = graphql(`
-  mutation GenerateClueMutationDocument {
-    generateClue {
+  mutation GenerateClueMutationDocument($roomId: ID!) {
+    generateClue(roomId: $roomId) {
       ok
     }
   }
 `)
 
 function Game() {
+  const navigate = useNavigate();
   const [ board, setBoard ] = useState<Array<Card>>([])
   const [ turn, setTurn ] = useState<Team>(Team.Red)
   const [ turnCount, setTurnCount ] = useState<number>(0)
@@ -133,7 +114,6 @@ function Game() {
   const [ winner, setWinner ] = useState<Team>()
   const [ redClues, setRedClues ] = useState<Array<Clue>>([])
   const [ blueClues, setBlueClues ] = useState<Array<Clue>>([])
-  // const [ generateBoard, { loading: boardLoading} ] = useMutation(initializeGameMutationDocument)
   const [ endTurn ] = useMutation(endTurnMutationDocument)
   const [ endGame ] = useMutation(endGameMutationDocument)
   const [ getGameRecap ] = useLazyQuery(getGameRecapQueryDocument, {
@@ -185,29 +165,19 @@ function Game() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [shouldGenerateClue, setShouldGenerateClue] = useState(false);
 
-  const handleGenerateBoard = () => {
-    // generateBoard({
-    //   onCompleted: (data) => {
-    //     if (data.initializeGame != null) {
-    //       console.log(data)
-    //       setBoard(data.initializeGame.game!.board!.filter((card): card is Card => card !== null))
-    //       setTurn(data.initializeGame.game!.turn!)
-    //       setTurnCount(data.initializeGame.game!.turnCount!)
-    //       setWinner(data.initializeGame.game!.winner!)
-    //       setClue(undefined)
-    //       setShouldGenerateClue(true)
-    //     }
-    //   }
-    // })
-    loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
-  }
-  // no op change to test ci
   // use effect to load the recap when winner changes
   useEffect(() => {
     if (winner != null) {
-      getGameRecap()
+      getGameRecap({variables: {roomId: window.location.pathname.split("/")[2]},})
     }
   }, [winner, getGameRecap])
+
+  useEffect(() => {
+    if (!isInitialized) {
+      loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
+      setShouldGenerateClue(true)
+    }
+  }, [isInitialized, loadBoard])
 
   useEffect(() => {
     if (!isInitialized) {
@@ -216,7 +186,7 @@ function Game() {
     }
     if (shouldGenerateClue) {
       console.log(turn)
-      generateClue()
+      generateClue({variables: {roomId: window.location.pathname.split("/")[2]},})
       setShouldGenerateClue(false)
     }
   }, [turn, generateClue, shouldGenerateClue, isInitialized])
@@ -229,7 +199,9 @@ function Game() {
       await guessCard({ variables: { "position": {
         x: position.x,
         y: position.y
-      } } })
+      },
+      "roomId": window.location.pathname.split("/")[2]
+     } })
       loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
     } catch (e) {
       console.log(e)
@@ -238,7 +210,7 @@ function Game() {
 
   const handleEndTurn = async () => {
     try {
-      await endTurn()
+      await endTurn({variables: {roomId: window.location.pathname.split("/")[2]},})
       loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
     } catch (e) {
       console.log(e)
@@ -247,11 +219,15 @@ function Game() {
 
   const handleEndGame = async () => { 
     try {
-      await endGame()
+      await endGame({variables: {roomId: window.location.pathname.split("/")[2]},})
       loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
     } catch (e) {
       console.log(e)
     }
+  }
+
+  const handleReturnToLanding = () => {
+    navigate(`/`)
   }
 
   const renderCard = (card: Card) => {
@@ -298,7 +274,7 @@ function Game() {
 
   return (
     <>
-      <Modal isOpen={winner != null} onClose={handleGenerateBoard} size='xl'>
+      <Modal isOpen={winner != null} onClose={handleReturnToLanding} size='xl'>
         <ModalOverlay />  
         <ModalContent>
           <ModalHeader>Winner: {winner}</ModalHeader>
@@ -315,12 +291,10 @@ function Game() {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={handleGenerateBoard} isLoading={false}>Play Again</Button>
+            <Button onClick={handleReturnToLanding} isLoading={false}>Play Again</Button>
           </ModalFooter>
         </ModalContent>
-      </Modal>
-      { board.length == 0 ?    
-      <Button onClick={handleGenerateBoard} isLoading={false}>Get Board</Button> :
+      </Modal> 
       <Flex direction="column">
         <ChakraCard>
           <CardBody bg={turn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
@@ -346,7 +320,7 @@ function Game() {
           )
           )}
         </SimpleGrid>
-      </Flex>}
+      </Flex>
     </>
   )
 }

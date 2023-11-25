@@ -27,10 +27,11 @@ class Card():
     position: Position
     is_revealed: bool = False
     
-    def __init__(self, word_value: str, type_value: CardType, position: Position):
+    def __init__(self, word_value: str, type_value: CardType, position: Position, is_revealed: bool = False):
         self.word_value = word_value
         self.type_value = type_value
         self.position = position
+        self.is_revealed = is_revealed
     
     # Print a string that contains all the relevant information about the card
     # if the card is revealed, includes the type, else does not
@@ -49,7 +50,7 @@ class Card():
     
     @classmethod
     def from_dict(cls, card_dict: dict):
-        return cls(card_dict["word_value"], CardType[card_dict["type_value"]], Position(card_dict["position"]["x"], card_dict["position"]["y"]))
+        return cls(card_dict["word_value"], CardType[card_dict["type_value"]], Position(card_dict["position"]["x"], card_dict["position"]["y"]), card_dict["is_revealed"])
         
 class Clue():
     word: str
