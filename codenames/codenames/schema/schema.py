@@ -182,6 +182,8 @@ class GenerateClue(graphene.Mutation):
 
 # endregion
 
+# region Schema
+
 class Mutation(graphene.ObjectType):
     guess_card = GuessCard.Field()
     end_turn = EndTurn.Field()
@@ -197,6 +199,8 @@ class Query(graphene.ObjectType):
         return load_from_redis(room_id)
 
 schema = build_schema(query=Query, mutation=Mutation)
+
+# endregion
 
 # region Helpers
 def user_guesses(board: List[Card], guess: Card) -> CardType:
