@@ -29,7 +29,7 @@ jobs:
 
       - name: Build and push image to Google Container Registry
         run: |
-          docker build -t us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-frontend:$GITHUB_SHA ./codenames-frontend
+          docker build -t us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-frontend:$GITHUB_SHA ./frontend
           docker push us-central1-docker.pkg.dev/infinite-jest-generator/codenames/codenames-frontend:$GITHUB_SHA
 
       - name: Deploy to Google Cloud Run
