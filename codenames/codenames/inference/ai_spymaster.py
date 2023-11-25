@@ -23,6 +23,12 @@ def initialize_ai_spymaster(color: str = "red" ):
             number indicating the number of cards related to the clue. \
             The cards will be provided as a list of strings, formatted as follows: \
                Card: word, type, position, is_revealed. The type is one of: red_agent, blue_agent, assassin, bystander. \
+            Remember to follow these guidelines when providing your clue: \
+                1. Your clue should help your team {color} guess the {color} agents. \
+                2. Your could should NOT plausibly refer to any of the other cards on the board. \
+                    a. In order of priority, meaning MUST avoid the assassin, then the other team's agents. Bystanders may be a strategic risk \
+            Consider the associations your operatives are most likely to make-- just because a connection can be made doesn't mean it's the most \
+            guessable one. \
             You should return your response json formatted as follows: \
                 {{\"word\": \"clue\", \"number\": 1, \"reasouning\": \"<your reasoning here>\"}} \
             do not include ANY additional characters outside of the json, including delimiters or the word json \
