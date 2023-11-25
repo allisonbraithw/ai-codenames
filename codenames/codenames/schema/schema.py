@@ -1,8 +1,13 @@
 import graphene
+import time
+import json
 from typing import List
 from graphene_federation import build_schema
 
 from game.game import CodenamesGame
+from dependency_factory import dependency_factory as df
+
+redis_client = df.redis_client
 
 # Define card type enum
 class CardType(graphene.Enum):
@@ -94,6 +99,21 @@ class Game(graphene.ObjectType):
         game = CodenamesGame.get_game()
         return Team.RED if game.winner == "red" else Team.BLUE if game.winner == "blue" else None
 
+
+class Room(graphene.ObjectType):
+    id = graphene.ID()
+    name = graphene.String()
+    game = graphene.Field(Game)
+    
+    def resolve_game(parent, info):
+        return parent.game
+    
+    def resolve_name(parent, info):
+        return parent.name
+    
+    def resolve_id(parent, info):
+        return parent.id
+
 class GuessCard(graphene.Mutation):
     class Arguments:
         position = PositionInput(required=True)
@@ -106,6 +126,16 @@ class GuessCard(graphene.Mutation):
         game.reveal_card(position)
         
         return GuessCard(ok=True)
+  
+class StartRoom(graphene.Mutation):
+    room = graphene.Field(Room)
+    
+    def mutate(self, info):
+        # generate ID
+        room = Room(id="1", name=f"test-{time.time()}", game=CodenamesGame.new_game())
+        # put into upstash redis
+        redis_client.set("1", json.dumps(room.game.to_serializable()))
+        return StartRoom(room=room)
     
 class InitializeGame(graphene.Mutation):
     game = graphene.Field(Game)
@@ -149,14 +179,16 @@ class Mutation(graphene.ObjectType):
     end_turn = EndTurn.Field()
     end_game = EndGame.Field()
     generate_clue = GenerateClue.Field()
+    start_room = StartRoom.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))
-    game = graphene.Field(Game)
+    game = graphene.Field(Game, room_id=graphene.NonNull(graphene.ID))
     
-    def resolve_game(self, info):
-        game = CodenamesGame.get_game()
-        return game
+    def resolve_game(self, info, room_id):
+        # game = CodenamesGame.get_game()
+        game_json = json.loads(redis_client.get(room_id))
+        return CodenamesGame.from_dict(game_json)
 
 schema = build_schema(query=Query, mutation=Mutation)
 

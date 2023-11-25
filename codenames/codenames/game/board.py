@@ -43,6 +43,13 @@ class Card():
     # Returns the full representation of the card, with all information, whether it is revealed or not
     def __repr__(self):
         return f"Card: {self.word_value}, {str(self.type_value)}, {str(self.position)}, {self.is_revealed}"
+    
+    def to_serializable(self):
+        return {"word_value": self.word_value, "type_value": self.type_value.name, "position": {"x": self.position.x, "y": self.position.y}, "is_revealed": self.is_revealed}
+    
+    @classmethod
+    def from_dict(cls, card_dict: dict):
+        return cls(card_dict["word_value"], CardType[card_dict["type_value"]], Position(card_dict["position"]["x"], card_dict["position"]["y"]))
         
 class Clue():
     word: str
@@ -56,3 +63,10 @@ class Clue():
         
     def __str__(self):
         return f"Clue: {self.word}, {self.number}, {self.reasoning}"
+    
+    def to_serializable(self):
+        return {"word": self.word, "number": self.number, "reasoning": self.reasoning}
+    
+    @classmethod
+    def from_dict(cls, clue_dict: dict):
+        return cls(clue_dict["word"], clue_dict["number"], clue_dict["reasoning"])

@@ -54,6 +54,7 @@ type Mutation {
   endTurn: EndTurn
   endGame: EndGame
   generateClue: GenerateClue
+  startRoom: StartRoom
 }
 
 type Position {
@@ -68,7 +69,17 @@ input PositionInput {
 
 type Query {
   card(position: PositionInput!): Card
+  game(roomId: ID!): Game
+}
+
+type Room {
+  id: ID
+  name: String
   game: Game
+}
+
+type StartRoom {
+  room: Room
 }
 
 enum Team {
