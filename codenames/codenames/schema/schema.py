@@ -103,6 +103,8 @@ class Room(graphene.ObjectType):
     id = graphene.ID()
     name = graphene.String()
     game = graphene.Field(Game)
+    red_operatives = graphene.List(graphene.String)
+    blue_operatives = graphene.List(graphene.String)
     
     def resolve_game(parent, info):
         return parent.game
