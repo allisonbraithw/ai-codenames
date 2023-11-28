@@ -38,6 +38,7 @@ type Game {
 
 type GenerateClue {
   ok: Boolean
+  clue: Clue
 }
 
 type GuessCard {
@@ -71,6 +72,8 @@ type Room {
   id: ID
   name: String
   game: Game
+  redOperatives: [String]
+  blueOperatives: [String]
 }
 
 type StartRoom {

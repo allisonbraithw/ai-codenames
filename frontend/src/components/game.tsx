@@ -45,17 +45,6 @@ const getBoardQueryDocument = graphql(`
   }
 `)
 
-const getCurrentClueQueryDocument = graphql(`
-  query GetCurrentClueQueryDocument($roomId: ID!) {
-    game(roomId: $roomId) {
-      currentClue {
-        word
-        number
-      }
-    }
-  }
-`)
-
 const getGameRecapQueryDocument = graphql(`
   query GetGameRecapQueryDocument($roomId: ID!) {
     game(roomId: $roomId) {
@@ -101,6 +90,10 @@ const generateClueMutationDocument = graphql(`
   mutation GenerateClueMutationDocument($roomId: ID!) {
     generateClue(roomId: $roomId) {
       ok
+      clue {
+        word
+        number
+      }
     }
   }
 `)
@@ -143,21 +136,12 @@ function Game() {
     },
     fetchPolicy: 'no-cache'
   })
-  const [ getClue ] = useLazyQuery(getCurrentClueQueryDocument, {
-    onCompleted: (data) => {
-      if (data.game != null) {
-        console.log(data)
-        setClue(data.game.currentClue!)
-      }
-    },
-    fetchPolicy: 'no-cache'
-  })
   const [ guessCard ] = useMutation(guessCardMutationDocument)
   const [ generateClue, { loading: clueLoading} ] = useMutation(generateClueMutationDocument, {
     onCompleted: (data) => {
       if (data.generateClue != null) {
         console.log(data)
-        getClue({variables: {roomId: window.location.pathname.split("/")[2]},})
+        setClue(data.generateClue.clue!)
         loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
       }
     }

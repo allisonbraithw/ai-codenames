@@ -174,13 +174,14 @@ class GenerateClue(graphene.Mutation):
         room_id = graphene.NonNull(graphene.ID)
         
     ok = graphene.Boolean()
+    clue = graphene.Field(Clue)
     
     def mutate(self, info, room_id):
         game = load_from_redis(room_id)
         game.generate_clue()
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
-        return GenerateClue(ok=True)
+        return GenerateClue(ok=True, clue=game.get_current_clue())
 
 # endregion
 

@@ -1,5 +1,5 @@
-.PHONY: generate
-generate: npm run codegen
+generate: 
+	npm run codegen
 
 run: 
 	npm run dev
