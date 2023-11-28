@@ -34,10 +34,11 @@ def initialize_ai_spymaster(color: str = "red" ):
             do not include ANY additional characters outside of the json, including delimiters or the word json \
             "
     )
-    return spymaster
+    return spymaster.id
 
 def initialize_game_thread():
-    return client.beta.threads.create()
+    thread = client.beta.threads.create()
+    return thread.id
 
 def get_spymaster_clue(board: List[Card], thread_id: str, spymaster_id: str) -> str:
     """Given a board and a color, return a clue"""

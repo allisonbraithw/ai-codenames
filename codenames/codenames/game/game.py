@@ -10,22 +10,21 @@ WORD_LIST = ["Acne", "Acre", "Addendum", "Advertise", "Aircraft", "Aisle", "Alli
 class CodenamesGame():
     _instance = None 
     
-    def __init__(self):
-        self.board = self.initiate_board()
-        self.openai_thread = initialize_game_thread()
-        self.red_spymaster = initialize_ai_spymaster("red")
-        self.blue_spymaster = initialize_ai_spymaster("blue")
-        self.red_operatives = []
-        self.blue_operatives = []
-        self.red_clues = []
-        self.blue_clues = []
-        self.red_guesses = []
-        self.blue_guesses = []
-        self.red_score = 0
-        self.blue_score = 0
-        self.red_turn = True
-        self.winner = None
-        self.turn_count = 0
+    def __init__(self, existing_state=None):
+        if existing_state:
+            self.load_state(existing_state)
+        else:
+            self.board = self.initiate_board()
+            self.openai_thread_id = initialize_game_thread()
+            self.red_spymaster_id = initialize_ai_spymaster("red")
+            self.blue_spymaster_id = initialize_ai_spymaster("blue")
+            self.red_clues = []
+            self.blue_clues = []
+            self.red_score = 0
+            self.blue_score = 0
+            self.red_turn = True
+            self.winner = None
+            self.turn_count = 0
         
     @classmethod
     def get_game(cls):
@@ -38,6 +37,24 @@ class CodenamesGame():
         cls._instance = CodenamesGame()
         return cls._instance
     
+    @classmethod
+    def from_dict(cls, data):
+        # Create an instance of Game from a dictionary
+        return cls(existing_state=data)
+    
+    def load_state(self, state):
+        self.board = [Card.from_dict(card) for card in state["board"]]
+        self.openai_thread_id = state["openai_thread_id"]
+        self.red_spymaster_id = state["red_spymaster_id"]
+        self.blue_spymaster_id = state["blue_spymaster_id"]
+        self.red_turn = state["red_turn"] == "True"
+        self.turn_count = state["turn_count"]
+        self.red_clues = [Clue.from_dict(clue) for clue in state["red_clues"]]
+        self.blue_clues = [Clue.from_dict(clue) for clue in state["blue_clues"]]
+        self.red_score = state["red_score"]
+        self.blue_score = state["blue_score"]
+        self.winner = state["winner"]
+    
     # Temp - want this for troubleshooting so I don't have to play a full game
     def end_game(self):
         self.winner = "red" if self.red_turn else "blue"
@@ -45,10 +62,10 @@ class CodenamesGame():
     def generate_clue(self):
         if self.red_turn:
             print("generating red clue\n")
-            self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.red_spymaster.id))
+            self.red_clues.append(get_spymaster_clue(self.board, self.openai_thread_id, self.red_spymaster_id))
         else:
             print("generating blue clue\n")
-            self.blue_clues.append(get_spymaster_clue(self.board, self.openai_thread.id, self.blue_spymaster.id))
+            self.blue_clues.append(get_spymaster_clue(self.board, self.openai_thread_id, self.blue_spymaster_id))
         self.turn_count = self.get_current_clue().number + 1
         
     def get_current_clue(self) -> Clue:
@@ -140,6 +157,21 @@ class CodenamesGame():
         print("Game Recap:\n")
         print(f"Red clues: {[str(clue) for clue in self.red_clues]}\n")
         print(f"Blue clues: {[str(clue) for clue in self.blue_clues]}\n")
+        
+    def to_serializable(self):
+        return {
+            "board": [card.to_serializable() for card in self.board],
+            "openai_thread_id": self.openai_thread_id,
+            "red_spymaster_id": self.red_spymaster_id,
+            "blue_spymaster_id": self.blue_spymaster_id,
+            "red_turn": str(self.red_turn),
+            "turn_count": self.turn_count,
+            "red_clues": [clue.to_serializable() for clue in self.red_clues],
+            "blue_clues": [clue.to_serializable() for clue in self.blue_clues],
+            "red_score": self.red_score,
+            "blue_score": self.blue_score,
+            "winner": str(self.winner),
+        }
 
 def random_position(position_opts) -> Position:
     coords = random.choice(position_opts)
