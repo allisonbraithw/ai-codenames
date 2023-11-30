@@ -25,3 +25,22 @@ If you are developing a production application, we recommend updating the config
 - Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
 - Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
 - Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+
+## Graphql Codegen
+We use graphql-codegen to generate typescript types from graphql queries. To generate the types, run `make generate`, or `npm run codegen` in the frontend directory. This will generate the types in `src/gql/graphql.tx`. You can then import the types in your components like so:
+```typescript
+import { useGetUsersQuery } from '../src/gql/graphql';
+```
+You should also register the mutations and queries you will use with the codegen via the `graphql` module, for example:
+```typescript
+import { graphql } from '../src/gql';
+
+const getUserDocument = graphql`
+  query getUser($id: String!) {
+    user(id: $id) {
+      id
+      name
+    }
+  }
+`;
+```
