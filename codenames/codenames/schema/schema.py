@@ -77,6 +77,8 @@ class Game(graphene.ObjectType):
     red_clues = graphene.List(Clue)
     blue_clues = graphene.List(Clue)
     winner = graphene.Field(Team)
+    red_operatives = graphene.List(graphene.String)
+    blue_operatives = graphene.List(graphene.String)
     
     def resolve_board(parent, info):
         return parent.board
@@ -103,8 +105,6 @@ class Room(graphene.ObjectType):
     id = graphene.ID()
     name = graphene.String()
     game = graphene.Field(Game)
-    red_operatives = graphene.List(graphene.String)
-    blue_operatives = graphene.List(graphene.String)
     
     def resolve_game(parent, info):
         return parent.game
@@ -134,15 +134,36 @@ class GuessCard(graphene.Mutation):
         return GuessCard(ok=True)
   
 class StartRoom(graphene.Mutation):
+    class Arguments:
+        player_id = graphene.NonNull(graphene.String)
+    
     room = graphene.Field(Room)
     
-    def mutate(self, info):
+    def mutate(self, info, player_id):
         # generate ID
         room_id = generate_room_id()
-        room = Room(id=room_id, name=f"test-{time.time()}", game=CodenamesGame.new_game())
+        game = CodenamesGame.new_game()
+        # The player who starts the game joins as red
+        game.join_team("red", player_id=player_id)
+        room = Room(id=room_id, name=f"test-{time.time()}", game=game)
         # put into upstash redis
         redis_client.set(room_id, json.dumps(room.game.to_serializable()))
         return StartRoom(room=room)
+    
+class JoinRoom(graphene.Mutation):
+    class Arguments:
+        room_id = graphene.NonNull(graphene.String)
+        player_id = graphene.NonNull(graphene.String)
+        team = graphene.NonNull(Team)
+    
+    room = graphene.Field(Room)
+    
+    def mutate(self, info, room_id, player_id, team):
+        game = load_from_redis(room_id)
+        game.join_team(team.name.lower(), player_id=player_id)
+        redis_client.set(room_id, json.dumps(game.to_serializable()))
+        
+        return JoinRoom(room=Room(id=room_id, name=f"test-{time.time()}", game=game))
     
 class EndTurn(graphene.Mutation):
     class Arguments:
@@ -193,6 +214,7 @@ class Mutation(graphene.ObjectType):
     end_game = EndGame.Field()
     generate_clue = GenerateClue.Field()
     start_room = StartRoom.Field()
+    join_room = JoinRoom.Field()
     
 class Query(graphene.ObjectType):
     card = graphene.Field(Card, position=graphene.NonNull(PositionInput))

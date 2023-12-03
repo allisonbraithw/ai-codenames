@@ -2,11 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from "../gql"
 import { Button, Input, Spacer, Text, Flex } from '@chakra-ui/react';
+import { Team } from '../gql/graphql'
 import { useMutation } from '@apollo/client';
 
 const startRoomMutationDocument = graphql(`
-    mutation StartRoomMutationDocument {
-        startRoom {
+    mutation StartRoomMutationDocument($playerId: String!) {
+        startRoom(playerId: $playerId) {
+            room {
+                id
+            }
+        }
+    }
+`)
+
+const joinRoomMutationDocument = graphql(`
+    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {
+        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {
             room {
                 id
             }
@@ -23,15 +34,25 @@ function LandingPage() {
             navigate(`/game/${data!.startRoom!.room!.id}`);
         }
     });
+    const [ joinRoom ] = useMutation(joinRoomMutationDocument, {
+        onCompleted: (data) => {
+            console.log(data);
+            navigate(`/game/${data!.joinRoom!.room!.id}`);
+        }
+    });
 
     const handleNewRoom = () => {
         console.log("Clicked");
-        startRoom();
+        localStorage.setItem("playerId", "1")
+        localStorage.setItem("teamColor", "red")
+        startRoom({ variables: { playerId: "1" }});
     }
 
     const handleJoinRoom = () => {
         console.log("Clicked");
-        navigate(`/game/${gameId}`)
+        localStorage.setItem("playerId", "2")
+        localStorage.setItem("teamColor", "blue")
+        joinRoom({ variables: { playerId: "2", roomId: gameId, team: Team.Blue }});
     }
 
 

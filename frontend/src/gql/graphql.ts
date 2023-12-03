@@ -51,9 +51,11 @@ export type EndTurn = {
 export type Game = {
   __typename?: 'Game';
   blueClues?: Maybe<Array<Maybe<Clue>>>;
+  blueOperatives?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   board?: Maybe<Array<Maybe<Card>>>;
   currentClue?: Maybe<Clue>;
   redClues?: Maybe<Array<Maybe<Clue>>>;
+  redOperatives?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   turn?: Maybe<Team>;
   turnCount?: Maybe<Scalars['Int']['output']>;
   winner?: Maybe<Team>;
@@ -70,12 +72,18 @@ export type GuessCard = {
   ok?: Maybe<Scalars['Boolean']['output']>;
 };
 
+export type JoinRoom = {
+  __typename?: 'JoinRoom';
+  room?: Maybe<Room>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   endGame?: Maybe<EndGame>;
   endTurn?: Maybe<EndTurn>;
   generateClue?: Maybe<GenerateClue>;
   guessCard?: Maybe<GuessCard>;
+  joinRoom?: Maybe<JoinRoom>;
   startRoom?: Maybe<StartRoom>;
 };
 
@@ -98,6 +106,18 @@ export type MutationGenerateClueArgs = {
 export type MutationGuessCardArgs = {
   position: PositionInput;
   roomId: Scalars['ID']['input'];
+};
+
+
+export type MutationJoinRoomArgs = {
+  playerId: Scalars['String']['input'];
+  roomId: Scalars['String']['input'];
+  team: Team;
+};
+
+
+export type MutationStartRoomArgs = {
+  playerId: Scalars['String']['input'];
 };
 
 export type Position = {
@@ -129,11 +149,9 @@ export type QueryGameArgs = {
 
 export type Room = {
   __typename?: 'Room';
-  blueOperatives?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   game?: Maybe<Game>;
   id?: Maybe<Scalars['ID']['output']>;
   name?: Maybe<Scalars['String']['output']>;
-  redOperatives?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
 export type StartRoom = {
@@ -146,10 +164,21 @@ export enum Team {
   Red = 'RED'
 }
 
-export type StartRoomMutationDocumentMutationVariables = Exact<{ [key: string]: never; }>;
+export type StartRoomMutationDocumentMutationVariables = Exact<{
+  playerId: Scalars['String']['input'];
+}>;
 
 
 export type StartRoomMutationDocumentMutation = { __typename?: 'Mutation', startRoom?: { __typename?: 'StartRoom', room?: { __typename?: 'Room', id?: string | null } | null } | null };
+
+export type JoinRoomMutationDocumentMutationVariables = Exact<{
+  playerId: Scalars['String']['input'];
+  roomId: Scalars['String']['input'];
+  team: Team;
+}>;
+
+
+export type JoinRoomMutationDocumentMutation = { __typename?: 'Mutation', joinRoom?: { __typename?: 'JoinRoom', room?: { __typename?: 'Room', id?: string | null } | null } | null };
 
 export type GetBoardQueryDocumentQueryVariables = Exact<{
   roomId: Scalars['ID']['input'];
@@ -195,7 +224,8 @@ export type GenerateClueMutationDocumentMutationVariables = Exact<{
 export type GenerateClueMutationDocumentMutation = { __typename?: 'Mutation', generateClue?: { __typename?: 'GenerateClue', ok?: boolean | null, clue?: { __typename?: 'Clue', word?: string | null, number?: number | null } | null } | null };
 
 
-export const StartRoomMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartRoomMutationDocument"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startRoom"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"room"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<StartRoomMutationDocumentMutation, StartRoomMutationDocumentMutationVariables>;
+export const StartRoomMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartRoomMutationDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"playerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startRoom"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"playerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"playerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"room"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<StartRoomMutationDocumentMutation, StartRoomMutationDocumentMutationVariables>;
+export const JoinRoomMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"JoinRoomMutationDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"playerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"team"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Team"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"joinRoom"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"playerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"playerId"}}},{"kind":"Argument","name":{"kind":"Name","value":"roomId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}}},{"kind":"Argument","name":{"kind":"Name","value":"team"},"value":{"kind":"Variable","name":{"kind":"Name","value":"team"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"room"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<JoinRoomMutationDocumentMutation, JoinRoomMutationDocumentMutationVariables>;
 export const GetBoardQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBoardQueryDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roomId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"board"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wordValue"}},{"kind":"Field","name":{"kind":"Name","value":"typeValue"}},{"kind":"Field","name":{"kind":"Name","value":"isRevealed"}},{"kind":"Field","name":{"kind":"Name","value":"position"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"turn"}},{"kind":"Field","name":{"kind":"Name","value":"turnCount"}},{"kind":"Field","name":{"kind":"Name","value":"winner"}}]}}]}}]} as unknown as DocumentNode<GetBoardQueryDocumentQuery, GetBoardQueryDocumentQueryVariables>;
 export const GetGameRecapQueryDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGameRecapQueryDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roomId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"redClues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"reasoning"}}]}},{"kind":"Field","name":{"kind":"Name","value":"blueClues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"reasoning"}}]}}]}}]}}]} as unknown as DocumentNode<GetGameRecapQueryDocumentQuery, GetGameRecapQueryDocumentQueryVariables>;
 export const GuessCardMutationDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"GuessCardMutationDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"position"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PositionInput"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"guessCard"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"position"},"value":{"kind":"Variable","name":{"kind":"Name","value":"position"}}},{"kind":"Argument","name":{"kind":"Name","value":"roomId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roomId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<GuessCardMutationDocumentMutation, GuessCardMutationDocumentMutationVariables>;
