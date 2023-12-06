@@ -20,6 +20,8 @@ class CodenamesGame():
             self.blue_spymaster_id = initialize_ai_spymaster("blue")
             self.red_clues = []
             self.blue_clues = []
+            self.red_operatives = []
+            self.blue_operatives = []
             self.red_score = 0
             self.blue_score = 0
             self.red_turn = True
@@ -51,6 +53,8 @@ class CodenamesGame():
         self.turn_count = state["turn_count"]
         self.red_clues = [Clue.from_dict(clue) for clue in state["red_clues"]]
         self.blue_clues = [Clue.from_dict(clue) for clue in state["blue_clues"]]
+        self.red_operatives = state["red_operatives"]
+        self.blue_operatives = state["blue_operatives"]
         self.red_score = state["red_score"]
         self.blue_score = state["blue_score"]
         self.winner = state["winner"]
@@ -125,6 +129,16 @@ class CodenamesGame():
     def end_turn(self):
         self.red_turn = not self.red_turn
         # self.generate_clue()
+        
+    def join_team(self, team: str, player_id: str):
+        if team == "red":
+            if len(self.red_operatives) >= 1:
+                raise Exception("Red team is full!")
+            self.red_operatives.append(player_id)
+        else:
+            if len(self.blue_operatives) >= 1:
+                raise Exception("Blue team is full!")
+            self.blue_operatives.append(player_id)
 
     def initiate_board(self) -> List[Card]:
         # pick 25 random words from the word list
@@ -164,6 +178,8 @@ class CodenamesGame():
             "openai_thread_id": self.openai_thread_id,
             "red_spymaster_id": self.red_spymaster_id,
             "blue_spymaster_id": self.blue_spymaster_id,
+            "red_operatives": self.red_operatives,
+            "blue_operatives": self.blue_operatives,
             "red_turn": str(self.red_turn),
             "turn_count": self.turn_count,
             "red_clues": [clue.to_serializable() for clue in self.red_clues],

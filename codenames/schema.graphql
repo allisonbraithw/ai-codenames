@@ -34,6 +34,8 @@ type Game {
   redClues: [Clue]
   blueClues: [Clue]
   winner: Team
+  redOperatives: [String]
+  blueOperatives: [String]
 }
 
 type GenerateClue {
@@ -45,12 +47,17 @@ type GuessCard {
   ok: Boolean
 }
 
+type JoinRoom {
+  room: Room
+}
+
 type Mutation {
   guessCard(position: PositionInput!, roomId: ID!): GuessCard
   endTurn(roomId: ID!): EndTurn
   endGame(roomId: ID!): EndGame
   generateClue(roomId: ID!): GenerateClue
-  startRoom: StartRoom
+  startRoom(playerId: String!): StartRoom
+  joinRoom(playerId: String!, roomId: String!, team: Team!): JoinRoom
 }
 
 type Position {
@@ -72,8 +79,6 @@ type Room {
   id: ID
   name: String
   game: Game
-  redOperatives: [String]
-  blueOperatives: [String]
 }
 
 type StartRoom {
