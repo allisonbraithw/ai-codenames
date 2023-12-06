@@ -160,7 +160,7 @@ class JoinRoom(graphene.Mutation):
     
     def mutate(self, info, room_id, player_id, team):
         game = load_from_redis(room_id)
-        game.join_team(team.name.lower(), player_id=player_id)
+        game.join_team(team, player_id=player_id)
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
         return JoinRoom(room=Room(id=room_id, name=f"test-{time.time()}", game=game))
@@ -236,7 +236,10 @@ def user_guesses(board: List[Card], guess: Card) -> CardType:
     raise Exception("Card not found in board")
   
 def load_from_redis(room_id: str):
-    game_json = json.loads(redis_client.get(room_id))
+    redis_game = redis_client.get(room_id)
+    if redis_game is None:
+        raise Exception("Room not found")
+    game_json = json.loads()
     return CodenamesGame.from_dict(game_json)
 
 adjectives = ["happy", "jolly", "bright", "clever", "quick"]

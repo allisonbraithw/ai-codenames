@@ -132,8 +132,12 @@ class CodenamesGame():
         
     def join_team(self, team: str, player_id: str):
         if team == "red":
+            if len(self.red_operatives) >= 1:
+                raise Exception("Red team is full!")
             self.red_operatives.append(player_id)
         else:
+            if len(self.blue_operatives) >= 1:
+                raise Exception("Blue team is full!")
             self.blue_operatives.append(player_id)
 
     def initiate_board(self) -> List[Card]:

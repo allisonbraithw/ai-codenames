@@ -151,6 +151,12 @@ function Game() {
 
   // use effect to load the recap when winner changes
   useEffect(() => {
+    if (localStorage.getItem("playerId") == null) {
+      navigate(`/`)
+    }
+  })
+
+  useEffect(() => {
     if (winner != null) {
       getGameRecap({variables: {roomId: window.location.pathname.split("/")[2]},})
     }
@@ -176,7 +182,7 @@ function Game() {
   }, [turn, generateClue, shouldGenerateClue, isInitialized])
 
   const handleGuessCard = async (position: Position, isRevealed: boolean) => {
-    if (clueLoading || isRevealed) {
+    if (clueLoading || isRevealed || localStorage.getItem("teamColor") != turn) {
       return
     }
     try {
@@ -211,6 +217,7 @@ function Game() {
   }
 
   const handleReturnToLanding = () => {
+    localStorage.clear()
     navigate(`/`)
   }
 
@@ -226,9 +233,9 @@ function Game() {
         justifyContent="center"
         key={`${card?.position?.x}-${card?.position?.y}`}
         onClick={() => handleGuessCard(card!.position!, card!.isRevealed!)}
-        cursor={card.isRevealed || clueLoading ? "default" : "pointer"}
+        cursor={card.isRevealed || clueLoading || localStorage.getItem("teamColor") != turn? "default" : "pointer"}
         _hover={{
-          boxShadow: card.isRevealed || clueLoading ? undefined : 'md',
+          boxShadow: card.isRevealed || clueLoading || localStorage.getItem("teamColor") != turn ? undefined : 'md',
         }}
         >
           <Flex direction="column">
@@ -280,6 +287,9 @@ function Game() {
         </ModalContent>
       </Modal> 
       <Flex direction="column">
+        <Flex>
+          <Text>You are playing the {localStorage.getItem("teamColor")} team</Text>
+        </Flex>
         <ChakraCard>
           <CardBody bg={turn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
             <Flex>
