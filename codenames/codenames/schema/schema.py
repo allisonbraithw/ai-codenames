@@ -239,7 +239,7 @@ def load_from_redis(room_id: str):
     redis_game = redis_client.get(room_id)
     if redis_game is None:
         raise Exception("Room not found")
-    game_json = json.loads()
+    game_json = json.loads(redis_game)
     return CodenamesGame.from_dict(game_json)
 
 adjectives = ["happy", "jolly", "bright", "clever", "quick"]
