@@ -230,10 +230,12 @@ function Game() {
   // use effect to set clueLoading for fluid
   useEffect(() => {
     console.log("setting fluid clue loading")
-    if (clueLoading) {
-      fluidSharedObjects.sharedClue.set("loading", true)
-    } else {
-      fluidSharedObjects.sharedClue.set("loading", false)
+    if (fluidSharedObjects) {
+      if (clueLoading) {
+        fluidSharedObjects.sharedClue.set("loading", true)
+      } else {
+        fluidSharedObjects.sharedClue.set("loading", false)
+      }
     }
   }, [clueLoading, fluidSharedObjects])
 
@@ -378,6 +380,9 @@ function Game() {
         </ModalContent>
       </Modal> 
       <Flex direction="column">
+        <Flex>
+          <Text>Game ID: {window.location.pathname.split("/")[2]}</Text>
+        </Flex>
         <Flex>
           <Text>You are playing the {localStorage.getItem("teamColor")} team</Text>
         </Flex>
