@@ -13,8 +13,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n    mutation StartRoomMutationDocument($playerId: String!) {\n        startRoom(playerId: $playerId) {\n            room {\n                id\n            }\n        }\n    }\n": types.StartRoomMutationDocumentDocument,
-    "\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n            }\n        }\n    }\n": types.JoinRoomMutationDocumentDocument,
+    "\n    mutation StartRoomMutationDocument($playerId: String!, $fluidId: ID!) {\n        startRoom(playerId: $playerId, fluidId: $fluidId) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n": types.StartRoomMutationDocumentDocument,
+    "\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n": types.JoinRoomMutationDocumentDocument,
     "\n  query GetBoardQueryDocument($roomId: ID!) {\n    game(roomId: $roomId) {\n      board {\n        wordValue\n        typeValue\n        isRevealed\n        position {\n          x\n          y\n        }\n      }\n      turn\n      turnCount\n      winner\n    }\n  }\n": types.GetBoardQueryDocumentDocument,
     "\n  query GetGameRecapQueryDocument($roomId: ID!) {\n    game(roomId: $roomId) {\n      redClues {\n        word\n        number\n        reasoning\n      }\n      blueClues {\n        word\n        number\n        reasoning\n      }\n    }\n  }\n": types.GetGameRecapQueryDocumentDocument,
     "\n  mutation GuessCardMutationDocument($position: PositionInput!, $roomId: ID!) {\n    guessCard(position: $position, roomId: $roomId) {\n      ok\n    }\n  }\n": types.GuessCardMutationDocumentDocument,
@@ -40,11 +40,11 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    mutation StartRoomMutationDocument($playerId: String!) {\n        startRoom(playerId: $playerId) {\n            room {\n                id\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation StartRoomMutationDocument($playerId: String!) {\n        startRoom(playerId: $playerId) {\n            room {\n                id\n            }\n        }\n    }\n"];
+export function graphql(source: "\n    mutation StartRoomMutationDocument($playerId: String!, $fluidId: ID!) {\n        startRoom(playerId: $playerId, fluidId: $fluidId) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation StartRoomMutationDocument($playerId: String!, $fluidId: ID!) {\n        startRoom(playerId: $playerId, fluidId: $fluidId) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n            }\n        }\n    }\n"];
+export function graphql(source: "\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation JoinRoomMutationDocument($playerId: String!, $roomId: String!, $team: Team!) {\n        joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {\n            room {\n                id\n                fluidId\n            }\n        }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

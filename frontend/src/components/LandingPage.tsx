@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from "../gql"
 import { Button, Input, Spacer, Text, Flex, FormControl, FormErrorMessage} from '@chakra-ui/react';
+import { TinyliciousClient } from '@fluidframework/tinylicious-client'
+import { SharedMap } from 'fluid-framework'
 import { Team } from '../gql/graphql'
 import { useMutation } from '@apollo/client';
 
 const startRoomMutationDocument = graphql(`
-    mutation StartRoomMutationDocument($playerId: String!) {
-        startRoom(playerId: $playerId) {
+    mutation StartRoomMutationDocument($playerId: String!, $fluidId: ID!) {
+        startRoom(playerId: $playerId, fluidId: $fluidId) {
             room {
                 id
+                fluidId
             }
         }
     }
@@ -20,10 +23,28 @@ const joinRoomMutationDocument = graphql(`
         joinRoom(playerId: $playerId, roomId: $roomId, team: $team) {
             room {
                 id
+                fluidId
             }
         }
     }
 `)
+
+const startFluidContainer = async () => {
+    const client = new TinyliciousClient()
+    const containerSchema = {
+        initialObjects: { 
+            sharedClue: SharedMap,
+            sharedTurn: SharedMap,
+            sharedBoard: SharedMap,
+            sharedWinner: SharedMap,
+          }
+    }
+    let container;
+
+    ({container} = await client.createContainer(containerSchema));
+    const id = await container.attach();
+    return id
+  }
 
 function LandingPage() {
     const navigate = useNavigate();
@@ -31,20 +52,20 @@ function LandingPage() {
     const [ startRoom ] = useMutation(startRoomMutationDocument, {
         onCompleted: (data) => {
             console.log(data);
-            navigate(`/game/${data!.startRoom!.room!.id}`);
+            navigate(`/game/${data!.startRoom!.room!.id}#${data!.startRoom!.room!.fluidId}`);
         }
     });
     const [ joinRoom, { error: errorJoining } ] = useMutation(joinRoomMutationDocument, {
         onCompleted: (data) => {
             console.log(data);
-            navigate(`/game/${data!.joinRoom!.room!.id}`);
+            navigate(`/game/${data!.joinRoom!.room!.id}#${data!.joinRoom!.room!.fluidId}`);
         }
     });
 
     const handleNewRoom = () => {
         localStorage.setItem("playerId", "1")
         localStorage.setItem("teamColor", "RED")
-        startRoom({ variables: { playerId: "1" }});
+        startFluidContainer().then(returnedId => startRoom({ variables: { playerId: "1" , fluidId: returnedId}}));
     }
 
     const handleJoinRoom = () => {

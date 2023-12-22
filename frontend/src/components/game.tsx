@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { TinyliciousClient } from '@fluidframework/tinylicious-client'
+import { SharedMap } from 'fluid-framework'
 import { 
   SimpleGrid, 
   Box, 
@@ -26,6 +28,7 @@ import { Card, Position, Team, Clue } from '../gql/graphql'
 import { useLazyQuery, useMutation } from '@apollo/client'
 import '../App.css'
 
+//#region gql defs
 const getBoardQueryDocument = graphql(`
   query GetBoardQueryDocument($roomId: ID!) {
     game(roomId: $roomId) {
@@ -97,25 +100,52 @@ const generateClueMutationDocument = graphql(`
     }
   }
 `)
+//#endregion
+
+const getFluidData = async () => {
+  const client = new TinyliciousClient()
+  const containerSchema = {
+    initialObjects: { 
+      sharedClue: SharedMap,
+      sharedTurn: SharedMap,
+      sharedBoard: SharedMap,
+      sharedWinner: SharedMap,
+    }
+  }
+  let container;
+  const containerId = location.hash.substring(1);
+  ({container} = await client.getContainer(containerId, containerSchema));
+
+  return container.initialObjects
+}
 
 function Game() {
   const navigate = useNavigate();
-  const [ board, setBoard ] = useState<Array<Card>>([])
-  const [ turn, setTurn ] = useState<Team>(Team.Red)
-  const [ turnCount, setTurnCount ] = useState<number>(0)
-  const [ clue, setClue ] = useState<Clue>()
-  const [ winner, setWinner ] = useState<Team>()
+  //#region old state
   const [ redClues, setRedClues ] = useState<Array<Clue>>([])
   const [ blueClues, setBlueClues ] = useState<Array<Clue>>([])
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [shouldGenerateClue, setShouldGenerateClue] = useState(false);
+  //#endregion
+  //#region fluid state
+  const [fluidSharedObjects, setFluidSharedObjects] = useState<any>();
+  const [fluidLoading, setFluidLoading] = useState(true);
+  const [localClue, setLocalClue] = useState<Clue>();
+  const [localTurn, setLocalTurn] = useState<Team>(Team.Red)
+  const [localTurnCount, setLocalTurnCount] = useState<number>(0)
+  const [localBoard, setLocalBoard] = useState<Array<Card>>([])
+  const [localWinner, setLocalWinner] = useState<Team>()
+  const [localClueLoading, setLocalClueLoading] = useState(false)
+  //#endregion
+  //#region gql ops
   const [ endTurn ] = useMutation(endTurnMutationDocument)
   const [ endGame ] = useMutation(endGameMutationDocument)
   const [ getGameRecap ] = useLazyQuery(getGameRecapQueryDocument, {
     onCompleted: (data) => {
       if (data.game != null) {
-        console.log(data)
         setRedClues(data.game.redClues!.filter((clue): clue is Clue => clue !== null))
         setBlueClues(data.game.blueClues!.filter((clue): clue is Clue => clue !== null))
-        setTurn(Team.Blue)
+        setLocalTurn(Team.Blue)
       }
     },
     fetchPolicy: 'no-cache'
@@ -123,51 +153,115 @@ function Game() {
   const [ loadBoard ] = useLazyQuery(getBoardQueryDocument, {
     onCompleted: (data) => {
       if (data.game != null) {
-        const prevTurn = turn
-        console.log(data)
-        setBoard(data.game.board!.filter((card): card is Card => card !== null))
-        setTurn(data.game.turn!)
+        const prevTurn = localTurn
+        fluidSharedObjects.sharedBoard.set("board", data.game.board!.filter((card): card is Card => card !== null))
+        fluidSharedObjects.sharedTurn.set("team", data.game.turn!)
+        fluidSharedObjects.sharedTurn.set("count", data.game.turnCount!)
         if (prevTurn != data.game.turn) {
+          console.log("setting should generate clue as turn has changed")
           setShouldGenerateClue(true)
         }
-        setTurnCount(data.game.turnCount!)
-        setWinner(data.game.winner!)
+        fluidSharedObjects.sharedWinner.set("winner", data.game.winner!)
       }
     },
     fetchPolicy: 'no-cache'
   })
   const [ guessCard ] = useMutation(guessCardMutationDocument)
-  const [ generateClue, { loading: clueLoading} ] = useMutation(generateClueMutationDocument, {
+  const [ generateClue, { loading: clueLoading } ] = useMutation(generateClueMutationDocument, {
     onCompleted: (data) => {
       if (data.generateClue != null) {
-        console.log(data)
-        setClue(data.generateClue.clue!)
+        fluidSharedObjects.sharedClue.set("clue", data.generateClue.clue!)
         loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
       }
     }
   })
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [shouldGenerateClue, setShouldGenerateClue] = useState(false);
+  //#endregion
 
-  // use effect to load the recap when winner changes
+
+  useEffect(() => {
+    console.log("setting fluid loading")
+    setFluidLoading(true)
+    getFluidData()
+    .then(data => {
+      setFluidSharedObjects(data)
+      console.log("unsetting fluid loading")
+    });
+  }, [])
+
+  useEffect(() => {
+    if (fluidSharedObjects) {
+      const { sharedClue, sharedTurn, sharedBoard, sharedWinner } = fluidSharedObjects;
+      const updateLocalClue = () => setLocalClue(sharedClue.get('clue'));
+      const updateLocalClueLoading = () => setLocalClueLoading(sharedClue.get('loading'));
+      const updateLocalTurn = () => setLocalTurn(sharedTurn.get('team'))
+      const updateLocalTurnCount = () => setLocalTurnCount(sharedTurn.get('count'))
+      const updateLocalBoard = () => setLocalBoard(sharedBoard.get('board'))
+      const updateLocalWinner = () => setLocalWinner(sharedWinner.get('winner'))
+      updateLocalClue();
+      updateLocalTurn();
+      updateLocalTurnCount();
+      sharedClue.on("valueChanged", updateLocalClue);
+      sharedClue.on("valueChanged", updateLocalClueLoading);
+      sharedTurn.on("valueChanged", updateLocalTurn);
+      sharedTurn.on("valueChanged", updateLocalTurnCount);
+      sharedBoard.on("valueChanged", updateLocalBoard);
+      sharedWinner.on("valueChanged", updateLocalWinner);
+      setFluidLoading(false)
+      return () => {
+        sharedClue.off("valueChanged", updateLocalClue);
+        sharedClue.off("valueChanged", updateLocalClueLoading);
+        sharedTurn.off("valueChanged", updateLocalTurn);
+        sharedTurn.off("valueChanged", updateLocalTurnCount);
+        sharedBoard.off("valueChanged", updateLocalBoard);
+        sharedWinner.off("valueChanged", updateLocalWinner);
+      }
+    } else {
+      return;
+    }
+  }, [fluidSharedObjects])
+
+  // navigate to the home page if a playerId hasn't been set
   useEffect(() => {
     if (localStorage.getItem("playerId") == null) {
       navigate(`/`)
     }
   })
 
+  // use effect to set clueLoading for fluid
   useEffect(() => {
-    if (winner != null) {
+    console.log("setting fluid clue loading")
+    if (fluidSharedObjects) {
+      if (clueLoading) {
+        fluidSharedObjects.sharedClue.set("loading", true)
+      } else {
+        fluidSharedObjects.sharedClue.set("loading", false)
+      }
+    }
+  }, [clueLoading, fluidSharedObjects])
+
+  // use effect to load the recap when winner changes
+  useEffect(() => {
+    if (localWinner != null) {
       getGameRecap({variables: {roomId: window.location.pathname.split("/")[2]},})
     }
-  }, [winner, getGameRecap])
+  }, [localWinner, getGameRecap])
 
   useEffect(() => {
     if (!isInitialized) {
       loadBoard({variables: {roomId: window.location.pathname.split("/")[2]},})
-      setShouldGenerateClue(true)
     }
   }, [isInitialized, loadBoard])
+
+  useEffect(() => {
+    if (fluidLoading || localClueLoading) {
+      console.log("wait for fluid to load")
+      return
+    }
+    if (localClue == undefined) {
+      console.log("generating clue as local clue is undefined")
+      setShouldGenerateClue(true)
+    }
+  }, [fluidLoading, localClue, localClueLoading])
 
   useEffect(() => {
     if (!isInitialized) {
@@ -175,14 +269,14 @@ function Game() {
       return
     }
     if (shouldGenerateClue) {
-      console.log(turn)
+      console.log("generating clue for: " + localTurn)
       generateClue({variables: {roomId: window.location.pathname.split("/")[2]},})
       setShouldGenerateClue(false)
     }
-  }, [turn, generateClue, shouldGenerateClue, isInitialized])
+  }, [localTurn, generateClue, shouldGenerateClue, isInitialized, fluidLoading])
 
   const handleGuessCard = async (position: Position, isRevealed: boolean) => {
-    if (clueLoading || isRevealed || localStorage.getItem("teamColor") != turn) {
+    if (clueLoading || localClueLoading || isRevealed || localStorage.getItem("teamColor") != localTurn) {
       return
     }
     try {
@@ -233,9 +327,9 @@ function Game() {
         justifyContent="center"
         key={`${card?.position?.x}-${card?.position?.y}`}
         onClick={() => handleGuessCard(card!.position!, card!.isRevealed!)}
-        cursor={card.isRevealed || clueLoading || localStorage.getItem("teamColor") != turn? "default" : "pointer"}
+        cursor={card.isRevealed || clueLoading || localClueLoading || localStorage.getItem("teamColor") != localTurn? "default" : "pointer"}
         _hover={{
-          boxShadow: card.isRevealed || clueLoading || localStorage.getItem("teamColor") != turn ? undefined : 'md',
+          boxShadow: card.isRevealed || clueLoading || localClueLoading || localStorage.getItem("teamColor") != localTurn ? undefined : 'md',
         }}
         >
           <Flex direction="column">
@@ -262,13 +356,12 @@ function Game() {
     )
   }
 
-
   return (
     <>
-      <Modal isOpen={winner != null} onClose={handleReturnToLanding} size='xl'>
+      <Modal isOpen={localWinner != null} onClose={handleReturnToLanding} size='xl'>
         <ModalOverlay />  
         <ModalContent>
-          <ModalHeader>Winner: {winner}</ModalHeader>
+          <ModalHeader>Winner: {localWinner}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Flex direction="column">
@@ -288,17 +381,20 @@ function Game() {
       </Modal> 
       <Flex direction="column">
         <Flex>
+          <Text>Game ID: {window.location.pathname.split("/")[2]}</Text>
+        </Flex>
+        <Flex>
           <Text>You are playing the {localStorage.getItem("teamColor")} team</Text>
         </Flex>
         <ChakraCard>
-          <CardBody bg={turn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
+          <CardBody bg={localTurn == Team.Red ? "#FEB2B2" : "#BEE3F8"}>
             <Flex>
-              { clueLoading || !clue ? <Flex gap={3}><Text>Generating Clue...</Text><Spinner /></Flex> : 
+              { clueLoading || localClueLoading || fluidLoading || !localClue ? <Flex gap={3}><Text>Generating Clue...</Text><Spinner /></Flex> : 
               <>
-                <Text>Clue: {clue!.word}, {clue!.number}</Text>
+                <Text>Clue: {localClue.word}, {localClue.number}</Text>
                 <Spacer />
                 <Flex gap={3}>
-                  <Text>Guesses Remaining: {turnCount}</Text>
+                  <Text>Guesses Remaining: {localTurnCount}</Text>
                   <Button onClick={handleEndTurn} size="xs">End Turn</Button>
                   <Button onClick={handleEndGame} size="xs">End Game</Button>
                 </Flex>
@@ -309,7 +405,7 @@ function Game() {
         </ChakraCard>
         <Spacer p={5}/>
         <SimpleGrid columns={5} spacing={10}>
-          {board.map((card) => (
+          {localBoard.map((card) => (
               renderCard(card)
           )
           )}
