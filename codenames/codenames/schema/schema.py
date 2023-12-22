@@ -103,6 +103,7 @@ class Game(graphene.ObjectType):
 
 class Room(graphene.ObjectType):
     id = graphene.ID()
+    fluid_id = graphene.ID()
     name = graphene.String()
     game = graphene.Field(Game)
     
@@ -127,7 +128,7 @@ class GuessCard(graphene.Mutation):
     ok = graphene.Boolean()
     
     def mutate(self, info, position, room_id):
-        game = load_from_redis(room_id)
+        game, _ = load_from_redis(room_id)
         game.reveal_card(position)
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
@@ -136,18 +137,20 @@ class GuessCard(graphene.Mutation):
 class StartRoom(graphene.Mutation):
     class Arguments:
         player_id = graphene.NonNull(graphene.String)
+        fluid_id = graphene.NonNull(graphene.ID)
     
     room = graphene.Field(Room)
     
-    def mutate(self, info, player_id):
+    def mutate(self, info, player_id, fluid_id):
         # generate ID
         room_id = generate_room_id()
         game = CodenamesGame.new_game()
         # The player who starts the game joins as red
         game.join_team("red", player_id=player_id)
-        room = Room(id=room_id, name=f"test-{time.time()}", game=game)
+        room = Room(id=room_id, name=f"test-{time.time()}", game=game, fluid_id=fluid_id)
         # put into upstash redis
         redis_client.set(room_id, json.dumps(room.game.to_serializable()))
+        redis_client.set(f"{room_id}-key", fluid_id)
         return StartRoom(room=room)
     
 class JoinRoom(graphene.Mutation):
@@ -159,11 +162,11 @@ class JoinRoom(graphene.Mutation):
     room = graphene.Field(Room)
     
     def mutate(self, info, room_id, player_id, team):
-        game = load_from_redis(room_id)
+        game, fluid_id = load_from_redis(room_id)
         game.join_team(team, player_id=player_id)
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
-        return JoinRoom(room=Room(id=room_id, name=f"test-{time.time()}", game=game))
+        return JoinRoom(room=Room(id=room_id, name=f"test-{time.time()}", game=game, fluid_id=fluid_id))
     
 class EndTurn(graphene.Mutation):
     class Arguments:
@@ -171,7 +174,7 @@ class EndTurn(graphene.Mutation):
     ok = graphene.Boolean()
     
     def mutate(self, info, room_id):
-        game = load_from_redis(room_id)
+        game, _ = load_from_redis(room_id)
         game.end_turn()
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
@@ -184,7 +187,7 @@ class EndGame(graphene.Mutation):
     ok = graphene.Boolean()
     
     def mutate(self, info, room_id):
-        game = load_from_redis(room_id)
+        game, _ = load_from_redis(room_id)
         game.end_game()
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
@@ -198,7 +201,7 @@ class GenerateClue(graphene.Mutation):
     clue = graphene.Field(Clue)
     
     def mutate(self, info, room_id):
-        game = load_from_redis(room_id)
+        game, _ = load_from_redis(room_id)
         game.generate_clue()
         redis_client.set(room_id, json.dumps(game.to_serializable()))
         
@@ -221,7 +224,8 @@ class Query(graphene.ObjectType):
     game = graphene.Field(Game, room_id=graphene.NonNull(graphene.ID))
     
     def resolve_game(self, info, room_id):
-        return load_from_redis(room_id)
+        game, _ = load_from_redis(room_id)
+        return game
 
 schema = build_schema(query=Query, mutation=Mutation)
 
@@ -235,12 +239,13 @@ def user_guesses(board: List[Card], guess: Card) -> CardType:
             return card.type_value
     raise Exception("Card not found in board")
   
-def load_from_redis(room_id: str):
+def load_from_redis(room_id: str) -> (CodenamesGame, str):
     redis_game = redis_client.get(room_id)
     if redis_game is None:
         raise Exception("Room not found")
     game_json = json.loads(redis_game)
-    return CodenamesGame.from_dict(game_json)
+    fluid_id = redis_client.get(f"{room_id}-key")
+    return CodenamesGame.from_dict(game_json), fluid_id
 
 adjectives = ["happy", "jolly", "bright", "clever", "quick"]
 nouns = ["eagle", "panther", "lion", "tiger", "shark"]
